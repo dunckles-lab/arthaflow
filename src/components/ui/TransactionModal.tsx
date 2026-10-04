@@ -8,9 +8,9 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   ArrowLeftRight,
-  Plus,
 } from 'lucide-react';
 import { CategoryManagementModal } from './CategoryManagementModal';
+import { AmountInput } from './AmountInput';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
   const { wallets, categories, addTransaction, currentUser } = useFinance();
 
   const [type, setType] = useState<TransactionType>('expense');
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState<number>(0);
   const [walletId, setWalletId] = useState(wallets[0]?.id || '');
   const [targetWalletId, setTargetWalletId] = useState(wallets[1]?.id || '');
   const [categoryId, setCategoryId] = useState('');
@@ -37,8 +37,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const numAmount = parseFloat(amount);
-    if (!numAmount || !walletId) return;
+    if (!amount || amount <= 0 || !walletId) return;
 
     const selectedCategory = categories.find((c) => c.id === categoryId);
 
@@ -46,7 +45,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       user_id: currentUser.id,
       user_name: currentUser.name,
       type,
-      amount: numAmount,
+      amount,
       wallet_id: walletId,
       target_wallet_id: type === 'transfer' ? targetWalletId : undefined,
       category_id: type !== 'transfer' ? categoryId || undefined : undefined,
@@ -55,9 +54,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
       notes: notes.trim(),
     });
 
-    setAmount('');
+    setAmount(0);
     setNotes('');
     onClose();
+  };
+
+  const getColorScheme = () => {
+    if (type === 'expense') return 'rose';
+    if (type === 'income') return 'emerald';
+    return 'indigo';
   };
 
   return (
@@ -128,27 +133,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            {/* Amount */}
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Nominal Transaksi (IDR)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-mono">
-                  Rp
-                </span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  required
-                  placeholder="0"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl pl-9 pr-3 py-2.5 text-sm sm:text-base font-bold text-slate-100 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            {/* Amount Input with Auto-Formatting & Terbilang */}
+            <AmountInput
+              value={amount}
+              onChange={setAmount}
+              label="Nominal Transaksi (IDR)"
+              required
+              colorScheme={getColorScheme()}
+              showPresets={true}
+            />
 
             {/* Wallets and Categories */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -159,7 +153,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 <select
                   value={walletId}
                   onChange={(e) => setWalletId(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id}>
@@ -177,7 +171,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                   <select
                     value={targetWalletId}
                     onChange={(e) => setTargetWalletId(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
                   >
                     {wallets
                       .filter((w) => w.id !== walletId)
@@ -195,15 +189,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                     <button
                       type="button"
                       onClick={() => setIsCategoryModalOpen(true)}
-                      className="text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold"
+                      className="text-[10px] text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer"
                     >
-                      + Kelola
+                      + Kelola Kategori
                     </button>
                   </div>
                   <select
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
                   >
                     <option value="">Pilih Kategori...</option>
                     {filteredCategories.map((c) => (
@@ -231,7 +225,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 <label className="block text-xs font-medium text-slate-300 mb-1">Catatan</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Belanja mingguan"
+                  placeholder="Contoh: Belanja bulanan, Bensin"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"

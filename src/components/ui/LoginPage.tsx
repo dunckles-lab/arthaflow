@@ -120,7 +120,7 @@ export const LoginPage: React.FC = () => {
 
         {/* Footer info */}
         <p className="text-center text-[11px] text-slate-500 mt-6">
-          Akun terdaftar sebagai <span className="text-slate-400">dunckles123@gmail.com</span> otomatis memperoleh hak akses Superadmin.
+          ArthaFlow &bull; Enterprise & Household Finance
         </p>
       </div>
     </div>

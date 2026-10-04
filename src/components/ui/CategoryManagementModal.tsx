@@ -11,26 +11,14 @@ import {
   Tag,
   ArrowUpRight,
   ArrowDownLeft,
-  Sparkles,
-  Check,
 } from 'lucide-react';
+import { AmountInput } from './AmountInput';
+import { ColorPickerInput } from './ColorPickerInput';
 
 interface CategoryManagementModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const PRESET_COLORS = [
-  '#10b981', // Emerald
-  '#06b6d4', // Cyan
-  '#3b82f6', // Blue
-  '#8b5cf6', // Purple
-  '#ec4899', // Pink
-  '#f43f5e', // Rose
-  '#f97316', // Orange
-  '#fbbf24', // Amber
-  '#64748b', // Slate
-];
 
 export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = ({
   isOpen,
@@ -46,7 +34,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [color, setColor] = useState('#10b981');
-  const [budgetLimit, setBudgetLimit] = useState('');
+  const [budgetLimit, setBudgetLimit] = useState<number>(0);
 
   if (!isOpen) return null;
 
@@ -58,7 +46,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
     setName('');
     setType(selectedType);
     setColor(selectedType === 'income' ? '#10b981' : '#f43f5e');
-    setBudgetLimit('');
+    setBudgetLimit(0);
   };
 
   const handleStartEdit = (cat: Category) => {
@@ -67,7 +55,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
     setName(cat.name);
     setType(cat.type);
     setColor(cat.color || '#10b981');
-    setBudgetLimit(cat.budget_limit ? cat.budget_limit.toString() : '');
+    setBudgetLimit(cat.budget_limit || 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +67,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
         name: name.trim(),
         type,
         color,
-        budget_limit: budgetLimit ? parseFloat(budgetLimit) : undefined,
+        budget_limit: budgetLimit > 0 ? budgetLimit : undefined,
       });
     } else {
       await addCategory({
@@ -87,7 +75,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
         type,
         color,
         icon: type === 'income' ? 'ArrowUpRight' : 'ArrowDownLeft',
-        budget_limit: budgetLimit ? parseFloat(budgetLimit) : undefined,
+        budget_limit: budgetLimit > 0 ? budgetLimit : undefined,
       });
     }
 
@@ -105,11 +93,14 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
   const filteredCategories = categories.filter((c) => c.type === activeTab);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
       <div
         className="w-full sm:max-w-lg bg-[#12141d] border-t sm:border border-[#1e2436] rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92dvh] sm:max-h-[85vh] overflow-hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
+        {/* Mobile Drag Bar */}
+        <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mt-2.5 sm:hidden" />
+
         {/* Header */}
         <div className="px-4 py-3 sm:px-5 sm:py-4 border-b border-[#1e2436] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -125,7 +116,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors"
+            className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -137,7 +128,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
             <div className="flex-1 grid grid-cols-2 p-1 bg-[#0a0b10] border border-[#1e2436] rounded-xl gap-1">
               <button
                 onClick={() => setActiveTab('expense')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'expense'
                     ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
@@ -148,7 +139,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
               </button>
               <button
                 onClick={() => setActiveTab('income')}
-                className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-1.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   activeTab === 'income'
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
@@ -162,7 +153,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
             {canManage && (
               <button
                 onClick={() => handleStartAdd(activeTab)}
-                className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all shrink-0 active:scale-95"
+                className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all shrink-0 active:scale-95 cursor-pointer"
               >
                 <Plus className="w-4 h-4 stroke-[3]" />
                 <span className="hidden xs:inline">Tambah</span>
@@ -172,7 +163,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
         )}
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3">
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5">
           {isEditing ? (
             /* Form Create / Edit Category */
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -195,71 +186,50 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
                   placeholder="Contoh: Belanja Bulanan, Gaji, Makan & Minum"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Tipe</label>
-                  <select
-                    value={type}
-                    onChange={(e: any) => setType(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="expense">Pengeluaran</option>
-                    <option value="income">Pemasukan</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Batas Anggaran (Opsional)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="Rp 0"
-                    value={budgetLimit}
-                    onChange={(e) => setBudgetLimit(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              {/* Color Picker */}
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Warna Aksen Tag
-                </label>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {PRESET_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setColor(c)}
-                      className={`w-7 h-7 rounded-lg transition-transform flex items-center justify-center ${
-                        color === c ? 'scale-110 ring-2 ring-white' : 'hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: c }}
-                    >
-                      {color === c && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
-                    </button>
-                  ))}
-                </div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Tipe</label>
+                <select
+                  value={type}
+                  onChange={(e: any) => setType(e.target.value)}
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                >
+                  <option value="expense">Pengeluaran</option>
+                  <option value="income">Pemasukan</option>
+                </select>
               </div>
+
+              {/* AmountInput with Auto-Formatting & Terbilang */}
+              <AmountInput
+                value={budgetLimit}
+                onChange={setBudgetLimit}
+                label="Batas Anggaran Bulanan (Opsional)"
+                colorScheme="purple"
+                showPresets={true}
+              />
+
+              {/* ColorPickerInput */}
+              <ColorPickerInput
+                value={color}
+                onChange={setColor}
+                label="Warna Aksen Tag Kategori"
+              />
 
               {/* Form Actions */}
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2 border-t border-[#1e2436]">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#1e2436] hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-[#1e2436] hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
                 >
                   {editingId ? 'Perbarui Kategori' : 'Simpan Kategori'}
                 </button>
@@ -284,11 +254,8 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
                           {cat.name}
                         </h4>
                         {cat.budget_limit ? (
-                          <p className="text-[10px] text-slate-400">
-                            Batas:{' '}
-                            <span className="font-mono text-slate-300">
-                              Rp {cat.budget_limit.toLocaleString('id-ID')}
-                            </span>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            Batas: Rp {cat.budget_limit.toLocaleString('id-ID')}
                           </p>
                         ) : (
                           <p className="text-[10px] text-slate-500">Tanpa limit bulanan</p>
@@ -300,14 +267,14 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
                       <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => handleStartEdit(cat)}
-                          className="p-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] text-slate-400 hover:text-slate-200 transition-colors"
+                          className="p-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(cat.id, cat.name)}
-                          className="p-1.5 rounded-lg bg-[#12141d] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                          className="p-1.5 rounded-lg bg-[#12141d] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                           title="Hapus"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

@@ -9,15 +9,15 @@ import {
   Plus,
   CheckCircle2,
   Calendar,
-  Target,
   ArrowUpRight,
   ArrowDownLeft,
   Edit2,
   Trash2,
   X,
   AlertTriangle,
-  Wallet,
 } from 'lucide-react';
+import { AmountInput } from './AmountInput';
+import { ColorPickerInput } from './ColorPickerInput';
 
 export const SavingsSection: React.FC = () => {
   const {
@@ -38,21 +38,21 @@ export const SavingsSection: React.FC = () => {
   // Deposit modal state
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [selectedDepositGoal, setSelectedDepositGoal] = useState<SavingsGoal | null>(null);
-  const [depositAmount, setDepositAmount] = useState('');
+  const [depositAmount, setDepositAmount] = useState<number>(0);
   const [depositWalletId, setDepositWalletId] = useState(wallets[0]?.id || '');
   const [depositNotes, setDepositNotes] = useState('');
 
   // Withdraw modal state
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedWithdrawGoal, setSelectedWithdrawGoal] = useState<SavingsGoal | null>(null);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState<number>(0);
   const [withdrawWalletId, setWithdrawWalletId] = useState(wallets[0]?.id || '');
   const [withdrawNotes, setWithdrawNotes] = useState('');
 
   // Goal Form State
   const [name, setName] = useState('');
-  const [targetAmount, setTargetAmount] = useState('');
-  const [currentAmount, setCurrentAmount] = useState('0');
+  const [targetAmount, setTargetAmount] = useState<number>(0);
+  const [currentAmount, setCurrentAmount] = useState<number>(0);
   const [deadline, setDeadline] = useState('');
   const [category, setCategory] = useState('Dana Darurat');
   const [color, setColor] = useState('#8b5cf6');
@@ -73,8 +73,8 @@ export const SavingsSection: React.FC = () => {
   const handleOpenAdd = () => {
     setEditingGoal(null);
     setName('');
-    setTargetAmount('');
-    setCurrentAmount('0');
+    setTargetAmount(0);
+    setCurrentAmount(0);
     setDeadline('');
     setCategory('Dana Darurat');
     setColor('#8b5cf6');
@@ -84,8 +84,8 @@ export const SavingsSection: React.FC = () => {
   const handleOpenEdit = (goal: SavingsGoal) => {
     setEditingGoal(goal);
     setName(goal.name);
-    setTargetAmount(goal.target_amount.toString());
-    setCurrentAmount(goal.current_amount.toString());
+    setTargetAmount(goal.target_amount);
+    setCurrentAmount(goal.current_amount);
     setDeadline(goal.deadline || '');
     setCategory(goal.category || 'Dana Darurat');
     setColor(goal.color || '#8b5cf6');
@@ -94,13 +94,13 @@ export const SavingsSection: React.FC = () => {
 
   const handleGoalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !targetAmount) return;
+    if (!name || targetAmount <= 0) return;
 
     if (editingGoal) {
       await updateSavingsGoal(editingGoal.id, {
         name,
-        target_amount: parseFloat(targetAmount) || 0,
-        current_amount: parseFloat(currentAmount) || 0,
+        target_amount: targetAmount,
+        current_amount: currentAmount,
         deadline: deadline || undefined,
         category,
         color,
@@ -108,7 +108,7 @@ export const SavingsSection: React.FC = () => {
     } else {
       await addSavingsGoal({
         name,
-        target_amount: parseFloat(targetAmount) || 0,
+        target_amount: targetAmount,
         deadline,
         category,
         color,
@@ -127,7 +127,7 @@ export const SavingsSection: React.FC = () => {
 
   const openDeposit = (goal: SavingsGoal) => {
     setSelectedDepositGoal(goal);
-    setDepositAmount('');
+    setDepositAmount(0);
     setDepositNotes('');
     if (wallets.length > 0) setDepositWalletId(wallets[0].id);
     setIsDepositModalOpen(true);
@@ -135,10 +135,10 @@ export const SavingsSection: React.FC = () => {
 
   const handleDepositSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDepositGoal || !depositAmount || !depositWalletId) return;
+    if (!selectedDepositGoal || depositAmount <= 0 || !depositWalletId) return;
     await depositToSavings(
       selectedDepositGoal.id,
-      parseFloat(depositAmount) || 0,
+      depositAmount,
       depositWalletId,
       depositNotes
     );
@@ -147,7 +147,7 @@ export const SavingsSection: React.FC = () => {
 
   const openWithdraw = (goal: SavingsGoal) => {
     setSelectedWithdrawGoal(goal);
-    setWithdrawAmount('');
+    setWithdrawAmount(0);
     setWithdrawNotes('');
     if (wallets.length > 0) setWithdrawWalletId(wallets[0].id);
     setIsWithdrawModalOpen(true);
@@ -155,10 +155,10 @@ export const SavingsSection: React.FC = () => {
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedWithdrawGoal || !withdrawAmount || !withdrawWalletId) return;
+    if (!selectedWithdrawGoal || withdrawAmount <= 0 || !withdrawWalletId) return;
     await withdrawFromSavings(
       selectedWithdrawGoal.id,
-      parseFloat(withdrawAmount) || 0,
+      withdrawAmount,
       withdrawWalletId,
       withdrawNotes
     );
@@ -217,14 +217,14 @@ export const SavingsSection: React.FC = () => {
                       <>
                         <button
                           onClick={() => handleOpenEdit(goal)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-[#12141d] transition-colors"
+                          className="p-1 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-[#12141d] transition-colors cursor-pointer"
                           title="Edit Target"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(goal)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                           title="Hapus Target"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -238,63 +238,65 @@ export const SavingsSection: React.FC = () => {
                 <div className="w-full bg-[#1e2436] rounded-full h-2.5 my-3 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
-                      isDone ? 'bg-emerald-500' : 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                      isDone
+                        ? 'bg-emerald-500'
+                        : percentage > 50
+                        ? 'bg-gradient-to-r from-purple-500 to-indigo-500'
+                        : 'bg-purple-500'
                     }`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-xs">
+                <div className="flex justify-between items-baseline mb-1">
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Terkumpul</span>
-                    <span className="font-semibold text-slate-200 font-mono">
+                    <span className="text-[10px] text-slate-400">Terkumpul:</span>
+                    <p className="text-sm font-bold text-slate-100 font-mono">
                       {formatCurrency(goal.current_amount)}
-                    </span>
+                    </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-500 block">Target</span>
-                    <span className="font-semibold text-slate-400 font-mono">
+                    <span className="text-[10px] text-slate-400">Target:</span>
+                    <p className="text-xs font-semibold text-slate-300 font-mono">
                       {formatCurrency(goal.target_amount)}
-                    </span>
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 mt-3 pt-2.5 border-t border-[#1e2436]/60">
-                  <div className="flex items-center gap-1 font-mono">
-                    <Calendar className="w-3 h-3" />
-                    <span>{goal.deadline || 'Tanpa tenggat'}</span>
-                  </div>
-                  <div className="font-mono text-[10px]">
-                    {isDone ? (
-                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> 100% Selesai
-                      </span>
-                    ) : (
-                      <span className="text-purple-400 font-semibold">{percentage}% ({formatCurrency(remaining)} lagi)</span>
-                    )}
-                  </div>
+                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-[#1e2436]/50">
+                  <span className="text-purple-400 font-mono font-bold flex items-center gap-1">
+                    {percentage}%
+                    {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline" />}
+                  </span>
+                  <span className="text-slate-500 font-mono text-[10px]">
+                    {isDone ? 'Target Tercapai!' : `Kurang ${formatCurrency(remaining)}`}
+                  </span>
                 </div>
+
+                {goal.deadline && (
+                  <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-2">
+                    <Calendar className="w-3 h-3 text-slate-400" />
+                    <span>Target: {new Date(goal.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                )}
               </div>
 
-              {/* Action Buttons: Setor & Tarik */}
-              <div className="grid grid-cols-2 gap-2 mt-4">
+              {/* Action Buttons for Deposit & Withdraw */}
+              <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-[#1e2436]">
                 <button
                   onClick={() => openDeposit(goal)}
-                  className="flex items-center justify-center gap-1 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95"
+                  className="py-2 px-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                 >
-                  <ArrowUpRight className="w-3.5 h-3.5" /> Setor
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>Setor</span>
                 </button>
-
                 <button
                   onClick={() => openWithdraw(goal)}
                   disabled={goal.current_amount <= 0}
-                  className={`flex items-center justify-center gap-1 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95 ${
-                    goal.current_amount > 0
-                      ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      : 'bg-[#12141d] text-slate-600 border border-[#1e2436] cursor-not-allowed opacity-50'
-                  }`}
+                  className="py-2 px-2 bg-[#12141d] hover:bg-[#1e2436] text-slate-300 border border-[#1e2436] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                 >
-                  <ArrowDownLeft className="w-3.5 h-3.5" /> Tarik
+                  <ArrowDownLeft className="w-3.5 h-3.5" />
+                  <span>Tarik</span>
                 </button>
               </div>
             </div>
@@ -303,12 +305,12 @@ export const SavingsSection: React.FC = () => {
 
         {savingsGoals.length === 0 && (
           <div className="col-span-full py-8 text-center bg-[#0a0b10] border border-dashed border-[#1e2436] rounded-xl text-slate-500 text-xs">
-            Belum ada target tabungan yang dibuat atau diizinkan untuk Anda.
+            Belum ada target tabungan yang dibuat.
           </div>
         )}
       </div>
 
-      {/* Modal Create / Edit Goal */}
+      {/* Modal Add / Edit Savings Goal */}
       {isGoalModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
@@ -323,77 +325,54 @@ export const SavingsSection: React.FC = () => {
                   {editingGoal ? 'Edit Target Tabungan' : 'Buat Target Tabungan Baru'}
                 </h3>
                 <p className="text-[10px] sm:text-xs text-slate-400">
-                  {editingGoal ? 'Perbarui target dan pencapaian dana' : 'Rencanakan pos dana masa depan'}
+                  Rencanakan tabungan dan alokasi dana masa depan
                 </p>
               </div>
               <button
                 onClick={() => setIsGoalModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200"
+                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleGoalSubmit} className="space-y-3">
+            <form onSubmit={handleGoalSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Nama Target</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Dana Darurat, DP Rumah, Liburan"
+                  placeholder="Contoh: Dana Darurat 6 Bulan, DP Rumah, Liburan Jepang"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Target Nominal (IDR)</label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    required
-                    placeholder="Contoh: 10000000"
-                    value={targetAmount}
-                    onChange={(e) => setTargetAmount(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono"
-                  />
-                </div>
-
-                {editingGoal ? (
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Saldo Terkumpul (IDR)</label>
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      required
-                      value={currentAmount}
-                      onChange={(e) => setCurrentAmount(e.target.value)}
-                      className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-mono"
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1">Kategori Target</label>
-                    <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 cursor-pointer"
-                    >
-                      {categoryPresets.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
+              {/* Target Amount Input */}
+              <AmountInput
+                value={targetAmount}
+                onChange={setTargetAmount}
+                label="Target Nominal (IDR)"
+                required
+                colorScheme="purple"
+                showPresets={true}
+                presets={[1000000, 5000000, 10000000, 25000000, 50000000]}
+              />
 
               {editingGoal && (
+                <AmountInput
+                  value={currentAmount}
+                  onChange={setCurrentAmount}
+                  label="Penyesuaian Saldo Terkumpul (IDR)"
+                  colorScheme="indigo"
+                  showPresets={false}
+                />
+              )}
+
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Kategori Target</label>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Kategori</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
@@ -406,29 +385,36 @@ export const SavingsSection: React.FC = () => {
                     ))}
                   </select>
                 </div>
-              )}
 
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Tenggat Waktu / Target Selesai</label>
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
-                />
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">Tenggat Waktu</label>
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
               </div>
+
+              {/* ColorPickerInput */}
+              <ColorPickerInput
+                value={color}
+                onChange={setColor}
+                label="Warna Aksen Tabungan"
+              />
 
               <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#1e2436]">
                 <button
                   type="button"
                   onClick={() => setIsGoalModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-lg shadow-purple-600/20"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-purple-600/20 transition-all active:scale-95 cursor-pointer"
                 >
                   {editingGoal ? 'Simpan Perubahan' : 'Buat Target'}
                 </button>
@@ -438,7 +424,7 @@ export const SavingsSection: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Deposit */}
+      {/* Modal Setor Tabungan */}
       {isDepositModalOpen && selectedDepositGoal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
@@ -448,57 +434,59 @@ export const SavingsSection: React.FC = () => {
             <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
 
             <div className="flex items-center justify-between pb-3 border-b border-[#1e2436] mb-3.5">
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-100">Setor ke Tabungan</h3>
-                <p className="text-[10px] sm:text-xs text-slate-400">
-                  Target: <strong className="text-purple-400">{selectedDepositGoal.name}</strong>
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  <ArrowUpRight className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-100">Setor ke Tabungan</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-400">{selectedDepositGoal.name}</p>
+                </div>
               </div>
               <button
                 onClick={() => setIsDepositModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200"
+                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleDepositSubmit} className="space-y-3">
+            <form onSubmit={handleDepositSubmit} className="space-y-3.5">
+              {/* AmountInput for Deposit */}
+              <AmountInput
+                value={depositAmount}
+                onChange={setDepositAmount}
+                label="Nominal Setoran (IDR)"
+                required
+                colorScheme="purple"
+                showPresets={true}
+              />
+
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Sumber Rekening / Dompet</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Ambil dari Rekening / Dompet
+                </label>
                 <select
                   value={depositWalletId}
                   onChange={(e) => setDepositWalletId(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id}>
-                      {w.name} (Saldo: {formatCurrency(w.balance)})
+                      {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Nominal Setoran (IDR)</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  required
-                  placeholder="Contoh: 500000"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Catatan Setoran (Opsional)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Catatan Setoran</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Sisa THR / bonus"
+                  placeholder="Contoh: Sisa gaji bulanan"
                   value={depositNotes}
                   onChange={(e) => setDepositNotes(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
@@ -506,13 +494,13 @@ export const SavingsSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsDepositModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-emerald-500/20 cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-purple-600/20 transition-all active:scale-95 cursor-pointer"
                 >
                   Konfirmasi Setoran
                 </button>
@@ -522,7 +510,7 @@ export const SavingsSection: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Withdraw */}
+      {/* Modal Tarik Tabungan */}
       {isWithdrawModalOpen && selectedWithdrawGoal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
@@ -532,58 +520,67 @@ export const SavingsSection: React.FC = () => {
             <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
 
             <div className="flex items-center justify-between pb-3 border-b border-[#1e2436] mb-3.5">
-              <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-100">Tarik Dana Tabungan</h3>
-                <p className="text-[10px] sm:text-xs text-slate-400">
-                  Dari: <strong className="text-amber-400">{selectedWithdrawGoal.name}</strong> (Tersedia: {formatCurrency(selectedWithdrawGoal.current_amount)})
-                </p>
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                  <ArrowDownLeft className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-100">Tarik dari Tabungan</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-400">{selectedWithdrawGoal.name}</p>
+                </div>
               </div>
               <button
                 onClick={() => setIsWithdrawModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200"
+                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleWithdrawSubmit} className="space-y-3">
+            <form onSubmit={handleWithdrawSubmit} className="space-y-3.5">
+              <div className="p-3 bg-[#0a0b10] border border-[#1e2436] rounded-xl flex items-center justify-between">
+                <span className="text-xs text-slate-400">Saldo Tabungan Tersedia:</span>
+                <span className="text-sm font-mono font-bold text-purple-400">
+                  {formatCurrency(selectedWithdrawGoal.current_amount)}
+                </span>
+              </div>
+
+              {/* AmountInput for Withdraw */}
+              <AmountInput
+                value={withdrawAmount}
+                onChange={setWithdrawAmount}
+                label="Nominal Penarikan (IDR)"
+                required
+                colorScheme="rose"
+                max={selectedWithdrawGoal.current_amount}
+                showPresets={true}
+              />
+
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Masuk ke Rekening / Dompet</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Kirim ke Rekening / Dompet Tujuan
+                </label>
                 <select
                   value={withdrawWalletId}
                   onChange={(e) => setWithdrawWalletId(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer"
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 cursor-pointer"
                 >
                   {wallets.map((w) => (
                     <option key={w.id} value={w.id}>
-                      {w.name} (Saldo: {formatCurrency(w.balance)})
+                      {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Nominal Penarikan (IDR)</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  max={selectedWithdrawGoal.current_amount}
-                  required
-                  placeholder="Contoh: 500000"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Keperluan Penarikan (Opsional)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Alasan / Catatan Penarikan</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Keperluan darurat / pembayaran"
+                  placeholder="Contoh: Kebutuhan mendesak / realisasi target"
                   value={withdrawNotes}
                   onChange={(e) => setWithdrawNotes(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500"
                 />
               </div>
 
@@ -591,13 +588,13 @@ export const SavingsSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsWithdrawModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-lg shadow-amber-500/20 cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-600/20 transition-all active:scale-95 cursor-pointer"
                 >
                   Konfirmasi Penarikan
                 </button>
@@ -634,14 +631,14 @@ export const SavingsSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="w-full sm:w-auto px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-95"
+                className="w-full sm:w-auto px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-95 cursor-pointer"
               >
                 Ya, Hapus Target
               </button>

@@ -13,9 +13,10 @@ import {
   Edit2,
   Trash2,
   X,
-  ArrowLeftRight,
   AlertTriangle,
 } from 'lucide-react';
+import { AmountInput } from './AmountInput';
+import { ColorPickerInput } from './ColorPickerInput';
 
 export const WalletsSection: React.FC = () => {
   const { wallets, addWallet, updateWallet, deleteWallet, currentUser } = useFinance();
@@ -26,28 +27,17 @@ export const WalletsSection: React.FC = () => {
   // Form states
   const [name, setName] = useState('');
   const [type, setType] = useState<'bank' | 'e-wallet' | 'cash' | 'investment'>('bank');
-  const [balance, setBalance] = useState('');
+  const [balance, setBalance] = useState<number>(0);
   const [accountNumber, setAccountNumber] = useState('');
   const [color, setColor] = useState('#3b82f6');
 
   const canManage = currentUser.role === 'admin' || currentUser.role === 'superadmin';
 
-  const colorPresets = [
-    '#3b82f6', // blue
-    '#10b981', // emerald
-    '#8b5cf6', // purple
-    '#f59e0b', // amber
-    '#ec4899', // pink
-    '#06b6d4', // cyan
-    '#f43f5e', // rose
-    '#64748b', // slate
-  ];
-
   const handleOpenAdd = () => {
     setEditingWallet(null);
     setName('');
     setType('bank');
-    setBalance('0');
+    setBalance(0);
     setAccountNumber('');
     setColor('#3b82f6');
     setIsModalOpen(true);
@@ -57,7 +47,7 @@ export const WalletsSection: React.FC = () => {
     setEditingWallet(w);
     setName(w.name);
     setType(w.type);
-    setBalance(w.balance.toString());
+    setBalance(w.balance);
     setAccountNumber(w.account_number || '');
     setColor(w.color || '#3b82f6');
     setIsModalOpen(true);
@@ -71,7 +61,7 @@ export const WalletsSection: React.FC = () => {
       await updateWallet(editingWallet.id, {
         name,
         type,
-        balance: parseFloat(balance) || 0,
+        balance,
         account_number: accountNumber || undefined,
         color,
       });
@@ -79,7 +69,7 @@ export const WalletsSection: React.FC = () => {
       await addWallet({
         name,
         type,
-        balance: parseFloat(balance) || 0,
+        balance,
         account_number: accountNumber || undefined,
         color,
         is_active: true,
@@ -118,6 +108,7 @@ export const WalletsSection: React.FC = () => {
             Daftar dompet, kartu, dan rekening aktif ({wallets.length})
           </p>
         </div>
+
         {canManage && (
           <button
             onClick={handleOpenAdd}
@@ -155,14 +146,14 @@ export const WalletsSection: React.FC = () => {
                 <div className="flex items-center gap-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => handleOpenEdit(wallet)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#1e2436] transition-colors"
+                    className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-[#1e2436] transition-colors cursor-pointer"
                     title="Edit Rekening"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setDeleteTarget(wallet)}
-                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                     title="Hapus Rekening"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -214,19 +205,19 @@ export const WalletsSection: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200"
+                className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Nama Rekening / Akun</label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: BCA Operasional, GoPay, Brankas Kas"
+                  placeholder="Contoh: BCA Operasional, GoPay, Kas Tunai"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
@@ -255,61 +246,39 @@ export const WalletsSection: React.FC = () => {
                     placeholder="Contoh: 8830192831"
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  {editingWallet ? 'Penyesuaian Saldo (IDR)' : 'Saldo Awal (IDR)'}
-                </label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  required
-                  placeholder="0"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
-                />
-              </div>
+              {/* AmountInput with Auto-Formatting & Terbilang */}
+              <AmountInput
+                value={balance}
+                onChange={setBalance}
+                label={editingWallet ? 'Penyesuaian Saldo (IDR)' : 'Saldo Awal (IDR)'}
+                required
+                colorScheme="emerald"
+                showPresets={true}
+              />
 
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">Warna Aksen</label>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {colorPresets.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setColor(c)}
-                      className={`w-7 h-7 rounded-lg transition-transform ${
-                        color === c ? 'scale-110 ring-2 ring-white' : 'opacity-80 hover:opacity-100'
-                      }`}
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className="w-8 h-7 bg-transparent border-0 rounded cursor-pointer"
-                    title="Pilih warna khusus"
-                  />
-                </div>
-              </div>
+              {/* ColorPickerInput */}
+              <ColorPickerInput
+                value={color}
+                onChange={setColor}
+                label="Warna Aksen Rekening"
+              />
 
               <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#1e2436]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
                 >
                   {editingWallet ? 'Simpan Perubahan' : 'Tambah Rekening'}
                 </button>
@@ -346,14 +315,14 @@ export const WalletsSection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDelete}
-                className="w-full sm:w-auto px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-95"
+                className="w-full sm:w-auto px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-500/20 transition-all active:scale-95 cursor-pointer"
               >
                 Ya, Hapus Rekening
               </button>
