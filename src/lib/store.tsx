@@ -25,7 +25,7 @@ import {
   initialVisibilityRules,
   initialAuditLogs,
 } from './seed-data';
-import { getSupabase, isSupabaseConfigured } from './supabase';
+import { getSupabase, isSupabaseConfigured, signInWithGoogle, signOutSupabase } from './supabase';
 
 interface FinanceContextType {
   // Current Scope & User
@@ -36,6 +36,11 @@ interface FinanceContextType {
   allUsers: User[];
   setCurrentTenant: (tenant: Tenant) => void;
   setCurrentUser: (user: User) => void;
+
+  // Google SSO Auth
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
+  authEmail: string | null;
 
   // Data Collections (Filtered by RBAC & Visibility)
   wallets: Wallet[];
@@ -78,6 +83,80 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentTenant, setCurrentTenantState] = useState<Tenant>(initialTenants[0]);
   const [allUsers, setAllUsers] = useState<User[]>(initialUsers);
   const [currentUser, setCurrentUserState] = useState<User>(initialUsers[0]);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+
+  // Listen to Supabase Auth State Change (Google SSO)
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase || !isSupabaseConfigured()) return;
+
+    // Check active session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        handleAuthUser(session.user);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        handleAuthUser(session.user);
+      } else {
+        setAuthEmail(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleAuthUser = (authUser: any) => {
+    const email = authUser.email || '';
+    setAuthEmail(email);
+    const fullName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0];
+    const avatar = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
+
+    // If it is dunckles123@gmail.com, automatically promote to Superadmin
+    const isOwner = email.toLowerCase() === 'dunckles123@gmail.com';
+
+    setAllUsers((prevUsers) => {
+      const existingUser = prevUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
+      if (existingUser) {
+        const updated = {
+          ...existingUser,
+          role: isOwner ? ('superadmin' as UserRole) : existingUser.role,
+          name: fullName || existingUser.name,
+          avatar_url: avatar || existingUser.avatar_url,
+        };
+        setCurrentUserState(updated);
+        return prevUsers.map((u) => (u.id === existingUser.id ? updated : u));
+      } else {
+        const newUser: User = {
+          id: authUser.id || 'u-' + Date.now(),
+          email,
+          name: isOwner ? `${fullName} (Superadmin)` : fullName,
+          role: isOwner ? 'superadmin' : 'user',
+          tenant_id: currentTenant.id,
+          avatar_url: avatar,
+          created_at: new Date().toISOString(),
+        };
+        setCurrentUserState(newUser);
+        return [...prevUsers, newUser];
+      }
+    });
+  };
+
+  const loginWithGoogle = async () => {
+    await signInWithGoogle();
+  };
+
+  const logout = async () => {
+    await signOutSupabase();
+    setAuthEmail(null);
+    setCurrentUserState(initialUsers[0]);
+  };
 
   const [rawWallets, setRawWallets] = useState<Wallet[]>(initialWallets);
   const [rawCategories, setRawCategories] = useState<Category[]>(initialCategories);
@@ -593,6 +672,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         allUsers,
         setCurrentTenant,
         setCurrentUser,
+        loginWithGoogle,
+        logout,
+        authEmail,
         wallets: visibleWallets,
         categories: visibleCategories,
         transactions: visibleTransactions,

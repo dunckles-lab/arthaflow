@@ -30,7 +30,7 @@ export const initialTenants: Tenant[] = [
 export const initialUsers: User[] = [
   {
     id: 'u-superadmin',
-    email: 'superadmin@arthaflow.id',
+    email: 'dunckles123@gmail.com',
     name: 'Ilham (Superadmin)',
     role: 'superadmin',
     tenant_id: 't-household',

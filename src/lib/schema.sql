@@ -157,7 +157,7 @@ INSERT INTO tenants (id, name, type, currency) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO users (id, tenant_id, email, name, role) VALUES
-('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'superadmin@arthaflow.id', 'Super Admin Pusat', 'superadmin'),
+('00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'dunckles123@gmail.com', 'Ilham (Superadmin)', 'superadmin'),
 ('00000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'admin.keluarga@arthaflow.id', 'Kepala Keluarga (Admin)', 'admin'),
 ('00000000-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'partner.user@arthaflow.id', 'Pasangan / Partner (User)', 'user')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, role = EXCLUDED.role;
