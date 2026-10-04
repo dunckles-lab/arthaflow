@@ -11,7 +11,7 @@ import {
   Database,
   Plus,
   Menu,
-  ChevronDown,
+  Tag,
 } from 'lucide-react';
 import { TransactionModal } from './TransactionModal';
 import { VisibilityConfigModal } from './VisibilityConfigModal';
@@ -19,6 +19,7 @@ import { UserManagementModal } from './UserManagementModal';
 import { AuditLogModal } from './AuditLogModal';
 import { ExportModal } from './ExportModal';
 import { DatabaseConfigModal } from './DatabaseConfigModal';
+import { CategoryManagementModal } from './CategoryManagementModal';
 import { MenuSheet } from './MenuSheet';
 
 export const Navbar: React.FC = () => {
@@ -30,9 +31,7 @@ export const Navbar: React.FC = () => {
     allUsers,
     setCurrentUser,
     isLiveDbConnected,
-    loginWithGoogle,
     logout,
-    authEmail,
   } = useFinance();
 
   // Modals state
@@ -42,19 +41,8 @@ export const Navbar: React.FC = () => {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
+  const [isCatModalOpen, setIsCatModalOpen] = useState(false);
   const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
-  const [isSigningIn, setIsSigningIn] = useState(false);
-
-  const handleGoogleLogin = async () => {
-    try {
-      setIsSigningIn(true);
-      await loginWithGoogle();
-    } catch (err: any) {
-      alert('Gagal login dengan Google SSO: ' + (err.message || err));
-    } finally {
-      setIsSigningIn(false);
-    }
-  };
 
   const isSuperadmin = currentUser.role === 'superadmin';
   const isAdmin = currentUser.role === 'admin';
@@ -103,7 +91,7 @@ export const Navbar: React.FC = () => {
             {/* Supabase status badge */}
             <button
               onClick={() => setIsDbModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-[11px] text-slate-300 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-[11px] text-slate-300 transition-colors cursor-pointer"
               title="Konfigurasi Database"
             >
               <span
@@ -114,12 +102,22 @@ export const Navbar: React.FC = () => {
               <span>{isLiveDbConnected ? 'Live DB' : 'Supabase Setup'}</span>
             </button>
 
+            {/* Category Management Button */}
+            <button
+              onClick={() => setIsCatModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              title="Kelola Kategori"
+            >
+              <Tag className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Kategori</span>
+            </button>
+
             {/* Export Reports Button */}
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <Download className="w-3.5 h-3.5 text-slate-300" />
               <span>Ekspor</span>
             </button>
 
@@ -128,7 +126,7 @@ export const Navbar: React.FC = () => {
               <>
                 <button
                   onClick={() => setIsVisModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-indigo-300 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-indigo-300 transition-colors cursor-pointer"
                   title="Atur Hak Visibilitas Anggota"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -137,7 +135,7 @@ export const Navbar: React.FC = () => {
 
                 <button
                   onClick={() => setIsUserModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
                   title="Manajemen Pengguna"
                 >
                   <Users className="w-3.5 h-3.5" />
@@ -149,7 +147,7 @@ export const Navbar: React.FC = () => {
             {isSuperadmin && (
               <button
                 onClick={() => setIsAuditModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-amber-300 transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-amber-300 transition-colors cursor-pointer"
                 title="Log Audit Sistem"
               >
                 <History className="w-3.5 h-3.5" />
@@ -160,7 +158,7 @@ export const Navbar: React.FC = () => {
             {/* Primary Action: Catat Transaksi */}
             <button
               onClick={() => setIsTxModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               Catat Transaksi
@@ -210,6 +208,7 @@ export const Navbar: React.FC = () => {
 
       {/* Render Modals */}
       <TransactionModal isOpen={isTxModalOpen} onClose={() => setIsTxModalOpen(false)} />
+      <CategoryManagementModal isOpen={isCatModalOpen} onClose={() => setIsCatModalOpen(false)} />
       <VisibilityConfigModal isOpen={isVisModalOpen} onClose={() => setIsVisModalOpen(false)} />
       <UserManagementModal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} />
       <AuditLogModal isOpen={isAuditModalOpen} onClose={() => setIsAuditModalOpen(false)} />
@@ -225,6 +224,7 @@ export const Navbar: React.FC = () => {
         onOpenUsers={() => setIsUserModalOpen(true)}
         onOpenAudit={() => setIsAuditModalOpen(true)}
         onOpenDb={() => setIsDbModalOpen(true)}
+        onOpenCategories={() => setIsCatModalOpen(true)}
       />
     </>
   );

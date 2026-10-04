@@ -12,9 +12,7 @@ import {
   Database,
   LogOut,
   UserCheck,
-  Sparkles,
-  Shield,
-  CreditCard,
+  Tag,
 } from 'lucide-react';
 
 interface MenuSheetProps {
@@ -25,6 +23,7 @@ interface MenuSheetProps {
   onOpenUsers: () => void;
   onOpenAudit: () => void;
   onOpenDb: () => void;
+  onOpenCategories: () => void;
 }
 
 export const MenuSheet: React.FC<MenuSheetProps> = ({
@@ -35,6 +34,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
   onOpenUsers,
   onOpenAudit,
   onOpenDb,
+  onOpenCategories,
 }) => {
   const {
     currentUser,
@@ -54,9 +54,9 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
   const isAdmin = currentUser.role === 'admin';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="w-full max-w-lg bg-[#12141d] border-t border-[#1e2436] rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-200"
+        className="w-full max-w-lg bg-[#12141d] border-t border-[#1e2436] rounded-t-3xl p-5 max-h-[88vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-200"
         style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
         {/* Drag handle */}
@@ -77,7 +77,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1e2436] flex items-center justify-center text-slate-400 hover:text-slate-200"
+            className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200"
           >
             <X className="w-4 h-4" />
           </button>
@@ -107,6 +107,21 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
 
         {/* Quick Menu List */}
         <div className="mt-4 space-y-2">
+          {/* Kelola Kategori */}
+          <button
+            onClick={() => {
+              onClose();
+              onOpenCategories();
+            }}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Tag className="w-4 h-4 text-emerald-400" />
+              <span>Kelola Kategori Anggaran</span>
+            </div>
+            <span className="text-[10px] text-emerald-400">CRUD</span>
+          </button>
+
           {/* Ekspor Laporan */}
           <button
             onClick={() => {
@@ -116,7 +131,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
             className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <Download className="w-4 h-4 text-emerald-400" />
+              <Download className="w-4 h-4 text-slate-300" />
               <span>Ekspor Laporan (Excel & PDF)</span>
             </div>
             <span className="text-[10px] text-slate-500">XLSX / PDF</span>
@@ -224,7 +239,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
             onClose();
             logout();
           }}
-          className="mt-4 w-full py-3 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+          className="mt-4 w-full py-3 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           Keluar dari Sesi (Logout)

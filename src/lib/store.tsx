@@ -65,6 +65,8 @@ interface FinanceContextType {
   updateWallet: (id: string, updates: Partial<Wallet>) => Promise<void>;
   deleteWallet: (id: string) => Promise<void>;
   addCategory: (category: Omit<Category, 'id' | 'created_at' | 'tenant_id'>) => Promise<void>;
+  updateCategory: (id: string, updates: Partial<Category>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'created_at' | 'updated_at' | 'tenant_id' | 'current_amount' | 'is_completed'>) => Promise<void>;
   depositToSavings: (goalId: string, amount: number, walletId: string, notes?: string) => Promise<void>;
   updateVisibilityRule: (rule: VisibilityRule) => Promise<void>;
@@ -569,6 +571,18 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logAudit('CREATE', 'category' as any, `Menambahkan kategori: ${catData.name}`);
   };
 
+  const updateCategory = async (id: string, updates: Partial<Category>) => {
+    setRawCategories((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
+    );
+    logAudit('UPDATE', 'category' as any, `Memperbarui kategori ID ${id}`);
+  };
+
+  const deleteCategory = async (id: string) => {
+    setRawCategories((prev) => prev.filter((c) => c.id !== id));
+    logAudit('DELETE', 'category' as any, `Menghapus kategori ID ${id}`);
+  };
+
   const addSavingsGoal = async (
     goalData: Omit<SavingsGoal, 'id' | 'created_at' | 'updated_at' | 'tenant_id' | 'current_amount' | 'is_completed'>
   ) => {
@@ -736,6 +750,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateWallet,
         deleteWallet,
         addCategory,
+        updateCategory,
+        deleteCategory,
         addSavingsGoal,
         depositToSavings,
         updateVisibilityRule,
