@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS visibility_rules (
     target_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
     allowed_wallet_ids JSONB DEFAULT '[]'::jsonb,
     allowed_category_ids JSONB DEFAULT '[]'::jsonb,
+    allowed_savings_goal_ids JSONB DEFAULT '[]'::jsonb,
     can_view_all_transactions BOOLEAN DEFAULT TRUE,
     can_view_savings BOOLEAN DEFAULT TRUE,
     can_view_analytics BOOLEAN DEFAULT TRUE,

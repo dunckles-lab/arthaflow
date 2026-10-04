@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useFinance } from '@/lib/store';
-import { ShieldCheck, Eye, EyeOff, Check, X } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, Check, X, PiggyBank } from 'lucide-react';
 import { VisibilityRule } from '@/types';
 
 interface VisibilityConfigModalProps {
@@ -19,6 +19,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
     users,
     wallets,
     categories,
+    savingsGoals,
     visibilityRules,
     updateVisibilityRule,
   } = useFinance();
@@ -37,6 +38,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
     target_user_id: selectedUserId,
     allowed_wallet_ids: wallets.map((w) => w.id),
     allowed_category_ids: categories.map((c) => c.id),
+    allowed_savings_goal_ids: savingsGoals.map((g) => g.id),
     can_view_all_transactions: true,
     can_view_savings: true,
     can_view_analytics: true,
@@ -56,7 +58,10 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
       (r) => r.target_user_id === uid && r.tenant_id === currentTenant.id
     );
     if (found) {
-      setRuleState(found);
+      setRuleState({
+        ...found,
+        allowed_savings_goal_ids: found.allowed_savings_goal_ids || savingsGoals.map((g) => g.id),
+      });
     } else {
       setRuleState({
         id: 'vr-' + Date.now(),
@@ -64,6 +69,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
         target_user_id: uid,
         allowed_wallet_ids: wallets.map((w) => w.id),
         allowed_category_ids: categories.map((c) => c.id),
+        allowed_savings_goal_ids: savingsGoals.map((g) => g.id),
         can_view_all_transactions: true,
         can_view_savings: true,
         can_view_analytics: true,
@@ -99,6 +105,19 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
     });
   };
 
+  const toggleSavingsGoal = (goalId: string) => {
+    setRuleState((prev) => {
+      const currentList = prev.allowed_savings_goal_ids || savingsGoals.map((g) => g.id);
+      const exists = currentList.includes(goalId);
+      return {
+        ...prev,
+        allowed_savings_goal_ids: exists
+          ? currentList.filter((id) => id !== goalId)
+          : [...currentList, goalId],
+      };
+    });
+  };
+
   const handleSave = async () => {
     await updateVisibilityRule(ruleState);
     setSaveSuccess(true);
@@ -128,7 +147,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                 Hak Visibilitas Pengguna
               </h3>
               <p className="text-[10px] sm:text-xs text-slate-400">
-                Atur modul dan data yang dapat dilihat oleh anggota
+                Atur modul, rekening, kategori, dan target tabungan yang dapat dilihat anggota
               </p>
             </div>
           </div>
@@ -150,7 +169,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
               <select
                 value={selectedUserId}
                 onChange={(e) => handleUserSelect(e.target.value)}
-                className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
               >
                 {targetableUsers.map((u) => (
                   <option key={u.id} value={u.id}>
@@ -185,7 +204,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
               </label>
 
               <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Lihat Modul Tabungan Target</span>
+                <span className="text-xs text-slate-300">Lihat Modul Tabungan Bersama</span>
                 <input
                   type="checkbox"
                   checked={ruleState.can_view_savings}
@@ -282,6 +301,44 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* 5. Allowed Savings Goals Checkbox Grid */}
+          <div>
+            <h4 className="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
+              <PiggyBank className="w-3.5 h-3.5 text-purple-400" />
+              Visibilitas Target Tabungan Khusus
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {savingsGoals.map((sg) => {
+                const allowedList = ruleState.allowed_savings_goal_ids || savingsGoals.map((g) => g.id);
+                const isChecked = allowedList.includes(sg.id);
+                return (
+                  <button
+                    type="button"
+                    key={sg.id}
+                    onClick={() => toggleSavingsGoal(sg.id)}
+                    className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                      isChecked
+                        ? 'bg-purple-500/10 border-purple-500/30 text-purple-300'
+                        : 'bg-[#0a0b10] border-[#1e2436] text-slate-500 opacity-60'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <span className="text-xs font-medium truncate block">{sg.name}</span>
+                      <span className="text-[10px] text-slate-500 block">{sg.category}</span>
+                    </div>
+                    {isChecked ? <Eye className="w-3.5 h-3.5 shrink-0" /> : <EyeOff className="w-3.5 h-3.5 shrink-0" />}
+                  </button>
+                );
+              })}
+
+              {savingsGoals.length === 0 && (
+                <div className="col-span-full text-center py-3 text-slate-500 text-[11px] bg-[#0a0b10] rounded-xl border border-[#1e2436]">
+                  Belum ada target tabungan di scope ini
+                </div>
+              )}
             </div>
           </div>
         </div>

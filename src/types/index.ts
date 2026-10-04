@@ -96,6 +96,7 @@ export interface VisibilityRule {
   target_user_id: string;
   allowed_wallet_ids: string[]; // empty means all or restricted based on toggle
   allowed_category_ids: string[];
+  allowed_savings_goal_ids?: string[];
   can_view_all_transactions: boolean;
   can_view_savings: boolean;
   can_view_analytics: boolean;

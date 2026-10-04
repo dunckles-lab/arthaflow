@@ -68,7 +68,10 @@ interface FinanceContextType {
   updateCategory: (id: string, updates: Partial<Category>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'created_at' | 'updated_at' | 'tenant_id' | 'current_amount' | 'is_completed'>) => Promise<void>;
+  updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => Promise<void>;
+  deleteSavingsGoal: (id: string) => Promise<void>;
   depositToSavings: (goalId: string, amount: number, walletId: string, notes?: string) => Promise<void>;
+  withdrawFromSavings: (goalId: string, amount: number, walletId: string, notes?: string) => Promise<void>;
   updateVisibilityRule: (rule: VisibilityRule) => Promise<void>;
   addUser: (user: Omit<User, 'id' | 'created_at'>) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
@@ -443,6 +446,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (sg.tenant_id !== currentTenant.id) return false;
     if (isAdmin) return true;
     if (userRule && userRule.can_view_savings === false) return false;
+    if (userRule && userRule.allowed_savings_goal_ids && userRule.allowed_savings_goal_ids.length > 0) {
+      return userRule.allowed_savings_goal_ids.includes(sg.id);
+    }
     return true;
   });
 
@@ -658,6 +664,75 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     logAudit('UPDATE', 'savings', `Setoran tabungan ${goalObj?.name || ''} sebesar Rp ${amount.toLocaleString('id-ID')}`);
   };
 
+  const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal>) => {
+    setRawSavingsGoals((prev) =>
+      prev.map((sg) => {
+        if (sg.id === id) {
+          const updated = { ...sg, ...updates, updated_at: new Date().toISOString() };
+          if (updates.target_amount !== undefined || updates.current_amount !== undefined) {
+            const cur = updates.current_amount !== undefined ? updates.current_amount : updated.current_amount;
+            const tgt = updates.target_amount !== undefined ? updates.target_amount : updated.target_amount;
+            updated.is_completed = cur >= tgt;
+          }
+          return updated;
+        }
+        return sg;
+      })
+    );
+    logAudit('UPDATE', 'savings', `Memperbarui target tabungan ID: ${id}`);
+  };
+
+  const deleteSavingsGoal = async (id: string) => {
+    setRawSavingsGoals((prev) => prev.filter((sg) => sg.id !== id));
+    logAudit('DELETE', 'savings', `Menghapus target tabungan ID: ${id}`);
+  };
+
+  const withdrawFromSavings = async (
+    goalId: string,
+    amount: number,
+    walletId: string,
+    notes?: string
+  ) => {
+    // 1. Add back to wallet
+    setRawWallets((prev) =>
+      prev.map((w) => (w.id === walletId ? { ...w, balance: w.balance + amount } : w))
+    );
+
+    // 2. Reduce savings goal current amount
+    setRawSavingsGoals((prev) =>
+      prev.map((sg) => {
+        if (sg.id === goalId) {
+          const newCurrent = Math.max(0, sg.current_amount - amount);
+          return {
+            ...sg,
+            current_amount: newCurrent,
+            is_completed: newCurrent >= sg.target_amount,
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return sg;
+      })
+    );
+
+    // 3. Log transaction as income / savings withdrawal
+    const goalObj = rawSavingsGoals.find((g) => g.id === goalId);
+    const tx: Transaction = {
+      id: 'tx-' + Date.now(),
+      tenant_id: currentTenant.id,
+      user_id: currentUser.id,
+      user_name: currentUser.name,
+      type: 'income',
+      amount,
+      wallet_id: walletId,
+      notes: `Penarikan Tabungan: ${goalObj?.name || 'Target Tabungan'} (${notes || 'Tarik dana'})`,
+      date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString(),
+    };
+    setRawTransactions((prev) => [tx, ...prev]);
+
+    logAudit('UPDATE', 'savings', `Penarikan tabungan ${goalObj?.name || ''} sebesar Rp ${amount.toLocaleString('id-ID')}`);
+  };
+
   const updateVisibilityRule = async (rule: VisibilityRule) => {
     setRawVisibilityRules((prev) => {
       const index = prev.findIndex((r) => r.target_user_id === rule.target_user_id && r.tenant_id === rule.tenant_id);
@@ -753,7 +828,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateCategory,
         deleteCategory,
         addSavingsGoal,
+        updateSavingsGoal,
+        deleteSavingsGoal,
         depositToSavings,
+        withdrawFromSavings,
         updateVisibilityRule,
         addUser,
         deleteUser,
