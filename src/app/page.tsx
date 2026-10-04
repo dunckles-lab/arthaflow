@@ -12,7 +12,7 @@ import { TransactionList } from '@/components/ui/TransactionList';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 import { TransactionModal } from '@/components/ui/TransactionModal';
 import { LoginPage } from '@/components/ui/LoginPage';
-import { Shield } from 'lucide-react';
+import { Layers, Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
   const { currentUser, currentTenant, getVisibilityForUser, isAuthenticated, isAuthChecking } = useFinance();
@@ -40,42 +40,34 @@ const DashboardContent: React.FC = () => {
   const isUserRole = currentUser.role === 'user';
 
   return (
-    <div className="min-h-screen bg-[#0a0b10] text-slate-100 flex flex-col selection:bg-emerald-500/30 pb-20 md:pb-6">
+    <div className="min-h-screen bg-[#0a0b10] text-slate-100 flex flex-col selection:bg-emerald-500/30 pb-24 md:pb-6">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        {/* User Scope & Active Role Banner */}
-        <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-lg">
-          <div>
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold tracking-wide uppercase">
-                {currentTenant.type === 'household'
-                  ? 'Rumah Tangga'
-                  : currentTenant.type === 'personal'
-                  ? 'Pribadi'
-                  : 'Organisasi'}
-              </span>
-              <span className="text-xs text-slate-500">•</span>
-              <span className="text-[11px] sm:text-xs text-slate-400 font-medium">
-                Scope: <strong className="text-slate-200">{currentTenant.name}</strong>
-              </span>
-            </div>
-            <h2 className="text-base sm:text-xl font-bold text-slate-100 tracking-tight">
-              Manajemen Keuangan & Tabungan
-            </h2>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-              Login sebagai{' '}
-              <span className="text-emerald-400 font-semibold">{currentUser.name}</span> (
-              {currentUser.role.toUpperCase()})
-            </p>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-6 space-y-3.5 sm:space-y-6">
+        {/* Compact Breadcrumb / Scope Header (Clean on mobile, expanded on desktop) */}
+        <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold uppercase tracking-wider">
+              {currentTenant.type === 'household'
+                ? 'Rumah Tangga'
+                : currentTenant.type === 'personal'
+                ? 'Pribadi'
+                : 'Organisasi'}
+            </span>
+            <span className="text-xs text-slate-600">•</span>
+            <span className="text-xs text-slate-300 font-semibold truncate">
+              {currentTenant.name}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 self-start md:self-auto">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
+              Peran: <strong className="text-emerald-400">{currentUser.role.toUpperCase()}</strong>
+            </span>
             {isUserRole && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-medium">
-                <Shield className="w-3.5 h-3.5" />
-                Mode Visibilitas Partner
-              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
+                Mode Terbatas
+              </span>
             )}
           </div>
         </div>
@@ -90,8 +82,8 @@ const DashboardContent: React.FC = () => {
           <TransactionList />
         </div>
 
-        {/* Mobile View: Dynamic Tabs */}
-        <div className="md:hidden space-y-4">
+        {/* Mobile View: Dynamic Clean Tabs */}
+        <div className="md:hidden space-y-3.5">
           {activeTab === 'overview' && (
             <>
               <PeriodSelector />
@@ -118,8 +110,8 @@ const DashboardContent: React.FC = () => {
               {(!isUserRole || userRule?.can_view_savings !== false) ? (
                 <SavingsSection />
               ) : (
-                <div className="p-6 text-center text-xs text-slate-500 bg-[#12141d] rounded-2xl border border-[#1e2436]">
-                  Akses tabungan dinonaktifkan oleh Admin.
+                <div className="p-8 text-center text-xs text-slate-400 bg-[#12141d] rounded-2xl border border-[#1e2436]">
+                  Akses tabungan dinonaktifkan oleh Admin untuk akun Anda.
                 </div>
               )}
             </>

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const TransactionList: React.FC = () => {
-  const { transactions, wallets, categories, deleteTransaction, periodFilter, currentUser } = useFinance();
+  const { transactions, wallets, categories, deleteTransaction, periodFilter } = useFinance();
 
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
@@ -77,59 +77,140 @@ export const TransactionList: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#12141d] border border-[#1e2436] rounded-xl p-5 shadow-lg">
+    <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3.5 sm:p-5 shadow-lg">
       {/* Header & Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
           <h3 className="text-sm font-semibold text-slate-200">Riwayat Mutasi Transaksi</h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-[11px] sm:text-xs text-slate-400">
             {displayedTransactions.length} transaksi tercatat pada periode ini
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {/* Search bar */}
-          <div className="relative">
+          <div className="relative flex-1 sm:w-48">
             <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
             <input
               type="text"
               placeholder="Cari catatan / kategori..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-[#0a0b10] border border-[#1e2436] rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 w-44"
+              className="bg-[#0a0b10] border border-[#1e2436] rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 w-full"
             />
           </div>
 
-          {/* Type filter */}
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="bg-[#0a0b10] border border-[#1e2436] rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
-          >
-            <option value="all">Semua Tipe</option>
-            <option value="income">Pemasukan</option>
-            <option value="expense">Pengeluaran</option>
-            <option value="transfer">Transfer</option>
-          </select>
+          <div className="flex items-center gap-2">
+            {/* Type filter */}
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="flex-1 sm:flex-initial bg-[#0a0b10] border border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            >
+              <option value="all">Semua Tipe</option>
+              <option value="income">Pemasukan</option>
+              <option value="expense">Pengeluaran</option>
+              <option value="transfer">Transfer</option>
+            </select>
 
-          {/* Wallet filter */}
-          <select
-            value={filterWallet}
-            onChange={(e) => setFilterWallet(e.target.value)}
-            className="bg-[#0a0b10] border border-[#1e2436] rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
-          >
-            <option value="all">Semua Rekening</option>
-            {wallets.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
+            {/* Wallet filter */}
+            <select
+              value={filterWallet}
+              onChange={(e) => setFilterWallet(e.target.value)}
+              className="flex-1 sm:flex-initial bg-[#0a0b10] border border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
+            >
+              <option value="all">Semua Rekening</option>
+              {wallets.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Transaction Table / List */}
-      <div className="overflow-x-auto">
+      {/* Mobile Card List View (< md) */}
+      <div className="block md:hidden space-y-2">
+        {displayedTransactions.length > 0 ? (
+          displayedTransactions.map((tx) => {
+            const wallet = wallets.find((w) => w.id === tx.wallet_id);
+            const targetWallet = wallets.find((w) => w.id === tx.target_wallet_id);
+            const category = categories.find((c) => c.id === tx.category_id);
+
+            const isInc = tx.type === 'income';
+            const isExp = tx.type === 'expense';
+
+            return (
+              <div
+                key={tx.id}
+                className="bg-[#0a0b10] border border-[#1e2436] rounded-xl p-3 flex items-center justify-between gap-3 active:bg-[#161926] transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                      isInc
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : isExp
+                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                        : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                    }`}
+                  >
+                    {isInc ? (
+                      <ArrowUpRight className="w-4 h-4" />
+                    ) : isExp ? (
+                      <ArrowDownLeft className="w-4 h-4" />
+                    ) : (
+                      <ArrowLeftRight className="w-4 h-4" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-slate-200 truncate">
+                      {tx.notes || category?.name || 'Tanpa Catatan'}
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                      <span>{tx.date}</span>
+                      <span>•</span>
+                      <span className="truncate">{wallet?.name || 'Rekening'}</span>
+                      {targetWallet && <span className="truncate">&rarr; {targetWallet.name}</span>}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right shrink-0 flex items-center gap-2">
+                  <div>
+                    <p
+                      className={`text-xs font-bold font-mono ${
+                        isInc ? 'text-emerald-400' : isExp ? 'text-rose-400' : 'text-indigo-400'
+                      }`}
+                    >
+                      {isInc ? '+' : isExp ? '-' : ''}
+                      {formatCurrency(tx.amount)}
+                    </p>
+                    <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                      {tx.user_name || 'Admin'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => deleteTransaction(tx.id)}
+                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400"
+                    title="Hapus"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-8 text-center text-slate-500 text-xs">
+            Tidak ada transaksi pada periode ini
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View (>= md) */}
+      <div className="hidden md:block overflow-x-auto">
         {displayedTransactions.length > 0 ? (
           <table className="w-full text-left border-collapse">
             <thead>
@@ -205,7 +286,7 @@ export const TransactionList: React.FC = () => {
                     <td className="py-3 px-3 text-center">
                       <button
                         onClick={() => deleteTransaction(tx.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
                         title="Hapus Transaksi"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
