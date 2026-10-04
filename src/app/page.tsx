@@ -11,12 +11,30 @@ import { SavingsSection } from '@/components/ui/SavingsSection';
 import { TransactionList } from '@/components/ui/TransactionList';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 import { TransactionModal } from '@/components/ui/TransactionModal';
+import { LoginPage } from '@/components/ui/LoginPage';
 import { Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
-  const { currentUser, currentTenant, getVisibilityForUser } = useFinance();
+  const { currentUser, currentTenant, getVisibilityForUser, isAuthenticated, isAuthChecking } = useFinance();
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'wallets' | 'savings'>('overview');
   const [isMobileTxOpen, setIsMobileTxOpen] = useState(false);
+
+  // 1. Loading state while verifying active session
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-[100dvh] bg-[#0a0b10] flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-600 flex items-center justify-center text-slate-950 font-black text-xl animate-pulse shadow-lg shadow-emerald-500/20 mb-4">
+          A
+        </div>
+        <p className="text-xs text-slate-400">Memeriksa sesi autentikasi...</p>
+      </div>
+    );
+  }
+
+  // 2. Anonymous redirect / Gate: Show LoginPage if not authenticated
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   const userRule = getVisibilityForUser(currentUser.id);
   const isUserRole = currentUser.role === 'user';

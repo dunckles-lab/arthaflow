@@ -40,7 +40,10 @@ interface FinanceContextType {
   // Google SSO Auth
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  bypassAuthForDemo: () => void;
   authEmail: string | null;
+  isAuthenticated: boolean;
+  isAuthChecking: boolean;
 
   // Data Collections (Filtered by RBAC & Visibility)
   wallets: Wallet[];
@@ -84,17 +87,34 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [allUsers, setAllUsers] = useState<User[]>(initialUsers);
   const [currentUser, setCurrentUserState] = useState<User>(initialUsers[0]);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
 
   // Listen to Supabase Auth State Change (Google SSO)
   useEffect(() => {
+    // Check local demo bypass or saved auth
+    try {
+      const savedAuth = localStorage.getItem('arthaflow_auth_state');
+      if (savedAuth === 'authenticated_demo') {
+        setIsAuthenticated(true);
+      }
+    } catch (e) {}
+
     const supabase = getSupabase();
-    if (!supabase || !isSupabaseConfigured()) return;
+    if (!supabase || !isSupabaseConfigured()) {
+      setIsAuthChecking(false);
+      return;
+    }
 
     // Check active session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         handleAuthUser(session.user);
+        setIsAuthenticated(true);
       }
+      setIsAuthChecking(false);
+    }).catch(() => {
+      setIsAuthChecking(false);
     });
 
     const {
@@ -102,9 +122,20 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         handleAuthUser(session.user);
+        setIsAuthenticated(true);
       } else {
         setAuthEmail(null);
+        // Only invalidate if not demo bypass
+        try {
+          const savedAuth = localStorage.getItem('arthaflow_auth_state');
+          if (savedAuth !== 'authenticated_demo') {
+            setIsAuthenticated(false);
+          }
+        } catch (e) {
+          setIsAuthenticated(false);
+        }
       }
+      setIsAuthChecking(false);
     });
 
     return () => {
@@ -115,6 +146,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const handleAuthUser = (authUser: any) => {
     const email = authUser.email || '';
     setAuthEmail(email);
+    setIsAuthenticated(true);
     const fullName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0];
     const avatar = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
 
@@ -152,9 +184,20 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     await signInWithGoogle();
   };
 
+  const bypassAuthForDemo = () => {
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem('arthaflow_auth_state', 'authenticated_demo');
+    } catch (e) {}
+  };
+
   const logout = async () => {
     await signOutSupabase();
     setAuthEmail(null);
+    setIsAuthenticated(false);
+    try {
+      localStorage.removeItem('arthaflow_auth_state');
+    } catch (e) {}
     setCurrentUserState(initialUsers[0]);
   };
 
@@ -674,7 +717,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setCurrentUser,
         loginWithGoogle,
         logout,
+        bypassAuthForDemo,
         authEmail,
+        isAuthenticated,
+        isAuthChecking,
         wallets: visibleWallets,
         categories: visibleCategories,
         transactions: visibleTransactions,
