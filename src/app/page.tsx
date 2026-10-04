@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { FinanceProvider, useFinance } from '@/lib/store';
 import { Navbar } from '@/components/ui/Navbar';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
@@ -9,24 +9,28 @@ import { InteractiveCharts } from '@/components/ui/InteractiveCharts';
 import { WalletsSection } from '@/components/ui/WalletsSection';
 import { SavingsSection } from '@/components/ui/SavingsSection';
 import { TransactionList } from '@/components/ui/TransactionList';
+import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
+import { TransactionModal } from '@/components/ui/TransactionModal';
 import { Shield } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
   const { currentUser, currentTenant, getVisibilityForUser } = useFinance();
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'wallets' | 'savings'>('overview');
+  const [isMobileTxOpen, setIsMobileTxOpen] = useState(false);
 
   const userRule = getVisibilityForUser(currentUser.id);
   const isUserRole = currentUser.role === 'user';
 
   return (
-    <div className="min-h-screen bg-[#0a0b10] text-slate-100 flex flex-col selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-[#0a0b10] text-slate-100 flex flex-col selection:bg-emerald-500/30 pb-20 md:pb-6">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* User Scope & Active Role Banner */}
-        <div className="bg-gradient-to-r from-[#12141d] via-[#161926] to-[#12141d] border border-[#1e2436] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+        <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-lg">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold tracking-wide uppercase">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold tracking-wide uppercase">
                 {currentTenant.type === 'household'
                   ? 'Rumah Tangga'
                   : currentTenant.type === 'personal'
@@ -34,14 +38,14 @@ const DashboardContent: React.FC = () => {
                   : 'Organisasi'}
               </span>
               <span className="text-xs text-slate-500">•</span>
-              <span className="text-xs text-slate-400 font-medium">
-                Scope Aktif: <strong className="text-slate-200">{currentTenant.name}</strong>
+              <span className="text-[11px] sm:text-xs text-slate-400 font-medium">
+                Scope: <strong className="text-slate-200">{currentTenant.name}</strong>
               </span>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-100 tracking-tight">
-              Dashboard Keuangan & Manajemen Tabungan
+            <h2 className="text-base sm:text-xl font-bold text-slate-100 tracking-tight">
+              Manajemen Keuangan & Tabungan
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
               Login sebagai{' '}
               <span className="text-emerald-400 font-semibold">{currentUser.name}</span> (
               {currentUser.role.toUpperCase()})
@@ -50,43 +54,78 @@ const DashboardContent: React.FC = () => {
 
           <div className="flex items-center gap-2 self-start md:self-auto">
             {isUserRole && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-medium">
                 <Shield className="w-3.5 h-3.5" />
-                Mode Visibilitas Terbatas oleh Admin
+                Mode Visibilitas Partner
               </div>
             )}
           </div>
         </div>
 
-        {/* 1. Period Selector */}
-        <PeriodSelector />
+        {/* Desktop View: Full Sections */}
+        <div className="hidden md:block space-y-6">
+          <PeriodSelector />
+          <StatCards />
+          {(!isUserRole || userRule?.can_view_analytics !== false) && <InteractiveCharts />}
+          <WalletsSection />
+          {(!isUserRole || userRule?.can_view_savings !== false) && <SavingsSection />}
+          <TransactionList />
+        </div>
 
-        {/* 2. Top Summary Stat Cards */}
-        <StatCards />
+        {/* Mobile View: Dynamic Tabs */}
+        <div className="md:hidden space-y-4">
+          {activeTab === 'overview' && (
+            <>
+              <PeriodSelector />
+              <StatCards />
+              {(!isUserRole || userRule?.can_view_analytics !== false) && <InteractiveCharts />}
+            </>
+          )}
 
-        {/* 3. Interactive Visual Charts */}
-        {(!isUserRole || userRule?.can_view_analytics !== false) && (
-          <InteractiveCharts />
-        )}
+          {activeTab === 'transactions' && (
+            <>
+              <PeriodSelector />
+              <TransactionList />
+            </>
+          )}
 
-        {/* 4. Rekening & Sumber Dana */}
-        <WalletsSection />
+          {activeTab === 'wallets' && (
+            <>
+              <WalletsSection />
+            </>
+          )}
 
-        {/* 5. Savings Goals Section */}
-        {(!isUserRole || userRule?.can_view_savings !== false) && (
-          <SavingsSection />
-        )}
-
-        {/* 6. Transaction Mutasi History */}
-        <TransactionList />
+          {activeTab === 'savings' && (
+            <>
+              {(!isUserRole || userRule?.can_view_savings !== false) ? (
+                <SavingsSection />
+              ) : (
+                <div className="p-6 text-center text-xs text-slate-500 bg-[#12141d] rounded-2xl border border-[#1e2436]">
+                  Akses tabungan dinonaktifkan oleh Admin.
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#1e2436] py-6 px-4 text-center text-xs text-slate-500 bg-[#0a0b10]">
+      {/* Mobile Bottom Navigation Bar */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenNewTransaction={() => setIsMobileTxOpen(true)}
+        onOpenMenu={() => {}}
+      />
+
+      {/* Mobile Quick Action Transaction Modal */}
+      <TransactionModal isOpen={isMobileTxOpen} onClose={() => setIsMobileTxOpen(false)} />
+
+      {/* Desktop Footer */}
+      <footer className="hidden md:block border-t border-[#1e2436] py-6 px-4 text-center text-xs text-slate-500 bg-[#0a0b10]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>ArthaFlow Financial Management System &copy; 2026. Free Tier Serverless Ready.</span>
+          <span>ArthaFlow Financial Management System &copy; 2026.</span>
           <span className="text-[11px] text-slate-600">
-            Arsitektur RBAC Multi-Scope & Multi-Tenant Terisolasi
+            RBAC Multi-Scope & Multi-Tenant Terisolasi
           </span>
         </div>
       </footer>

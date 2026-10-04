@@ -1,6 +1,7 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import { PWARegister } from '@/components/ui/PWARegister';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -12,9 +13,29 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#0a0b10',
+};
+
 export const metadata: Metadata = {
   title: 'ArthaFlow - Sistem Manajemen Keuangan & Tabungan Multi-Scope',
-  description: 'Aplikasi manajemen keuangan personal, rumah tangga, dan organisasi dengan sistem RBAC, ekspor PDF/Excel, dan sinkronisasi real-time.',
+  description:
+    'Aplikasi manajemen keuangan personal, rumah tangga, dan organisasi dengan sistem RBAC, ekspor PDF/Excel, dan sinkronisasi real-time.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'ArthaFlow',
+  },
+  icons: {
+    icon: '/favicon.png',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
@@ -24,8 +45,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${geistSans.variable} ${geistMono.variable} dark`}>
-      <body className="bg-[#0a0b10] text-slate-100 antialiased min-h-screen">
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="format-detection" content="telephone=no" />
+      </head>
+      <body className="bg-[#0a0b10] text-slate-100 antialiased min-h-[100dvh] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] selection:bg-emerald-500/20 selection:text-emerald-300">
         {children}
+        <PWARegister />
       </body>
     </html>
   );
