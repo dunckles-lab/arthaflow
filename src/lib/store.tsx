@@ -51,6 +51,7 @@ interface FinanceContextType {
   savingsGoals: SavingsGoal[];
   savingsContributions: SavingsContribution[];
   visibilityRules: VisibilityRule[];
+  userRule?: VisibilityRule;
   auditLogs: AuditLog[];
 
   // Period Filter State
@@ -900,6 +901,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       can_view_analytics: true,
       can_export_reports: true,
       can_manage_categories: false,
+      can_manage_wallets: false,
+      can_manage_savings: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -963,6 +966,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         savingsGoals: visibleSavingsGoals,
         savingsContributions: rawContributions,
         visibilityRules: rawVisibilityRules,
+        userRule,
         auditLogs: rawAuditLogs,
         periodFilter,
         setPeriodFilter,

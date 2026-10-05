@@ -114,6 +114,8 @@ CREATE TABLE IF NOT EXISTS visibility_rules (
     can_view_analytics BOOLEAN DEFAULT TRUE,
     can_export_reports BOOLEAN DEFAULT FALSE,
     can_manage_categories BOOLEAN DEFAULT FALSE,
+    can_manage_wallets BOOLEAN DEFAULT FALSE,
+    can_manage_savings BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

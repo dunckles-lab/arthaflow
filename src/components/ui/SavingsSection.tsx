@@ -30,6 +30,7 @@ export const SavingsSection: React.FC = () => {
     withdrawFromSavings,
     wallets,
     currentUser,
+    userRule,
   } = useFinance();
 
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
@@ -58,7 +59,8 @@ export const SavingsSection: React.FC = () => {
   const [category, setCategory] = useState('Dana Darurat');
   const [color, setColor] = useState('#8b5cf6');
 
-  const canManage = currentUser.role === 'admin' || currentUser.role === 'superadmin';
+  // Admin and Superadmin have full CRUD access unconditionally, plus users with delegated permission
+  const canManage = currentUser.role === 'admin' || currentUser.role === 'superadmin' || !!userRule?.can_manage_savings;
 
   const categoryPresets = [
     'Dana Darurat',

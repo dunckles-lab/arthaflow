@@ -20,7 +20,7 @@ import { ColorPickerInput } from './ColorPickerInput';
 import { CustomSelect } from './CustomSelect';
 
 export const WalletsSection: React.FC = () => {
-  const { wallets, addWallet, updateWallet, deleteWallet, currentUser } = useFinance();
+  const { wallets, addWallet, updateWallet, deleteWallet, currentUser, userRule } = useFinance();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWallet, setEditingWallet] = useState<WalletType | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<WalletType | null>(null);
@@ -32,7 +32,8 @@ export const WalletsSection: React.FC = () => {
   const [accountNumber, setAccountNumber] = useState('');
   const [color, setColor] = useState('#3b82f6');
 
-  const canManage = currentUser.role === 'admin' || currentUser.role === 'superadmin';
+  // Admin and Superadmin have full CRUD access unconditionally, plus users with delegated permission
+  const canManage = currentUser.role === 'admin' || currentUser.role === 'superadmin' || !!userRule?.can_manage_wallets;
 
   const handleOpenAdd = () => {
     setEditingWallet(null);

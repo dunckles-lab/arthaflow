@@ -246,6 +246,36 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                   className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
                 />
               </label>
+
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
+                <span className="text-xs text-slate-300">Kelola Rekening / Dompet (CRUD)</span>
+                <input
+                  type="checkbox"
+                  checked={!!ruleState.can_manage_wallets}
+                  onChange={(e) =>
+                    setRuleState((prev) => ({
+                      ...prev,
+                      can_manage_wallets: e.target.checked,
+                    }))
+                  }
+                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                />
+              </label>
+
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
+                <span className="text-xs text-slate-300">Kelola Target Tabungan (CRUD &amp; Penarikan)</span>
+                <input
+                  type="checkbox"
+                  checked={!!ruleState.can_manage_savings}
+                  onChange={(e) =>
+                    setRuleState((prev) => ({
+                      ...prev,
+                      can_manage_savings: e.target.checked,
+                    }))
+                  }
+                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                />
+              </label>
             </div>
           </div>
 

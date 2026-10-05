@@ -123,9 +123,11 @@ CREATE TABLE IF NOT EXISTS public.visibility_rules (
   can_view_all_transactions BOOLEAN DEFAULT TRUE,
   can_view_savings BOOLEAN DEFAULT TRUE,
   can_view_analytics BOOLEAN DEFAULT TRUE,
-  can_export_reports BOOLEAN DEFAULT TRUE,
+  can_export_reports BOOLEAN DEFAULT FALSE,
   can_manage_categories BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  can_manage_wallets BOOLEAN DEFAULT FALSE,
+  can_manage_savings BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 

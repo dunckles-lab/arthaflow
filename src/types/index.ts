@@ -102,6 +102,8 @@ export interface VisibilityRule {
   can_view_analytics: boolean;
   can_export_reports: boolean;
   can_manage_categories: boolean;
+  can_manage_wallets?: boolean;
+  can_manage_savings?: boolean;
   created_at: string;
   updated_at: string;
 }
