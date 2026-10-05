@@ -174,11 +174,27 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.categories (id, tenant_id, name, type, icon, color)
 VALUES
-  ('c-1', 't-personal', 'Gaji & Pendapatan', 'income', 'Briefcase', '#10b981'),
-  ('c-2', 't-personal', 'Makanan & Minuman', 'expense', 'Utensils', '#f43f5e'),
-  ('c-3', 't-personal', 'Transportasi', 'expense', 'Car', '#f59e0b'),
-  ('c-4', 't-personal', 'Tagihan & Utilitas', 'expense', 'Zap', '#8b5cf6'),
-  ('c-5', 't-personal', 'Belanja & Hiburan', 'expense', 'ShoppingBag', '#ec4899')
+  ('c-1', 't-personal', 'Gaji Pokok & Upah', 'income', 'Briefcase', '#10b981'),
+  ('c-2', 't-personal', 'Bonus & Tunjangan', 'income', 'Sparkles', '#06b6d4'),
+  ('c-3', 't-personal', 'Hasil Bisnis & Usaha', 'income', 'TrendingUp', '#3b82f6'),
+  ('c-4', 't-personal', 'Freelance & Proyek', 'income', 'Laptop', '#6366f1'),
+  ('c-5', 't-personal', 'Dividen & Investasi', 'income', 'Coins', '#8b5cf6'),
+  ('c-6', 't-personal', 'Hadiah & THR', 'income', 'Gift', '#ec4899'),
+  ('c-7', 't-personal', 'Cashback & Refund', 'income', 'RotateCcw', '#14b8a6'),
+  ('c-8', 't-personal', 'Pendapatan Lainnya', 'income', 'BadgeDollarSign', '#64748b'),
+  ('c-9', 't-personal', 'Makanan & Kuliner', 'expense', 'Utensils', '#f97316'),
+  ('c-10', 't-personal', 'Belanja Bulanan & Sembako', 'expense', 'ShoppingCart', '#f43f5e'),
+  ('c-11', 't-personal', 'Tagihan Listrik, Air & Gas', 'expense', 'Zap', '#fbbf24'),
+  ('c-12', 't-personal', 'Pulsa, Internet & Kuota', 'expense', 'Wifi', '#06b6d4'),
+  ('c-13', 't-personal', 'Bensin & Transportasi', 'expense', 'Car', '#8b5cf6'),
+  ('c-14', 't-personal', 'Cicilan & Pinjaman', 'expense', 'CreditCard', '#ef4444'),
+  ('c-15', 't-personal', 'Kesehatan & Obat', 'expense', 'HeartPulse', '#10b981'),
+  ('c-16', 't-personal', 'Pendidikan & Kursus', 'expense', 'BookOpen', '#3b82f6'),
+  ('c-17', 't-personal', 'Hiburan & Hobi', 'expense', 'Film', '#a855f7'),
+  ('c-18', 't-personal', 'Zakat, Infaq & Sedekah', 'expense', 'HandHeart', '#14b8a6'),
+  ('c-19', 't-personal', 'Perawatan Diri & Pakaian', 'expense', 'Sparkles', '#ec4899'),
+  ('c-20', 't-personal', 'Perlengkapan Rumah Tangga', 'expense', 'Home', '#d97706'),
+  ('c-21', 't-personal', 'Pengeluaran Tak Terduga', 'expense', 'AlertCircle', '#64748b')
 ON CONFLICT (id) DO NOTHING;
 
 -- 12. Enable Row Level Security (RLS) & Policies

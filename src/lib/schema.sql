@@ -190,3 +190,21 @@ INSERT INTO users (id, tenant_id, email, name, role) VALUES
 ('00000000-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'admin.keluarga@arthaflow.id', 'Kepala Keluarga (Admin)', 'admin'),
 ('00000000-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'partner.user@arthaflow.id', 'Pasangan / Partner (User)', 'user')
 ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, role = EXCLUDED.role;
+
+INSERT INTO categories (id, tenant_id, name, type, icon, color) VALUES
+('11111111-0001-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Gaji Pokok & Upah', 'income', 'Briefcase', '#10b981'),
+('11111111-0001-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Bonus & Tunjangan', 'income', 'Sparkles', '#06b6d4'),
+('11111111-0001-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Hasil Bisnis & Usaha', 'income', 'TrendingUp', '#3b82f6'),
+('11111111-0001-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'Makanan & Kuliner', 'expense', 'Utensils', '#f97316'),
+('11111111-0001-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', 'Belanja Bulanan & Sembako', 'expense', 'ShoppingCart', '#f43f5e'),
+('11111111-0001-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111', 'Tagihan Listrik, Air & Gas', 'expense', 'Zap', '#fbbf24'),
+('11111111-0001-0000-0000-000000000007', '11111111-1111-1111-1111-111111111111', 'Pulsa, Internet & Kuota', 'expense', 'Wifi', '#06b6d4'),
+('11111111-0001-0000-0000-000000000008', '11111111-1111-1111-1111-111111111111', 'Bensin & Transportasi', 'expense', 'Car', '#8b5cf6'),
+('11111111-0001-0000-0000-000000000009', '11111111-1111-1111-1111-111111111111', 'Cicilan & Pinjaman', 'expense', 'CreditCard', '#ef4444'),
+('11111111-0001-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', 'Kesehatan & Obat', 'expense', 'HeartPulse', '#10b981'),
+('11111111-0001-0000-0000-000000000011', '11111111-1111-1111-1111-111111111111', 'Pendidikan & Kursus', 'expense', 'BookOpen', '#3b82f6'),
+('11111111-0001-0000-0000-000000000012', '11111111-1111-1111-1111-111111111111', 'Hiburan & Hobi', 'expense', 'Film', '#a855f7'),
+('11111111-0001-0000-0000-000000000013', '11111111-1111-1111-1111-111111111111', 'Zakat, Infaq & Sedekah', 'expense', 'HandHeart', '#14b8a6'),
+('11111111-0001-0000-0000-000000000014', '11111111-1111-1111-1111-111111111111', 'Perawatan Diri & Pakaian', 'expense', 'Sparkles', '#ec4899'),
+('11111111-0001-0000-0000-000000000015', '11111111-1111-1111-1111-111111111111', 'Pengeluaran Tak Terduga', 'expense', 'AlertCircle', '#64748b')
+ON CONFLICT (id) DO NOTHING;

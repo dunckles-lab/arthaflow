@@ -24,6 +24,7 @@ import {
   initialContributions,
   initialVisibilityRules,
   initialAuditLogs,
+  defaultStandardCategories,
 } from './seed-data';
 import { getSupabase, isSupabaseConfigured, signInWithGoogle, signOutSupabase } from './supabase';
 
@@ -67,6 +68,7 @@ interface FinanceContextType {
   addCategory: (category: Omit<Category, 'id' | 'created_at' | 'tenant_id'>) => Promise<void>;
   updateCategory: (id: string, updates: Partial<Category>) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
+  generateDefaultCategories: () => Promise<number>;
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'created_at' | 'updated_at' | 'tenant_id' | 'current_amount' | 'is_completed'>) => Promise<void>;
   updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => Promise<void>;
   deleteSavingsGoal: (id: string) => Promise<void>;
@@ -650,8 +652,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const deleteCategory = async (id: string) => {
+    const target = rawCategories.find((c) => c.id === id);
+    if (!target) return;
+    if (!isSuperadmin && target.tenant_id !== currentTenant.id) {
+      console.warn('Unauthorized: Cannot delete category outside your assigned scope');
+      return;
+    }
+
     setRawCategories((prev) => prev.filter((c) => c.id !== id));
-    logAudit('DELETE', 'category' as any, `Menghapus kategori ID ${id}`);
+    logAudit('DELETE', 'category' as any, `Menghapus kategori ${target.name} (ID: ${id})`);
 
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
@@ -661,6 +670,43 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.warn('Supabase delete category error:', err);
       }
     }
+  };
+
+  const generateDefaultCategories = async (): Promise<number> => {
+    const existingNames = new Set(
+      rawCategories
+        .filter((c) => c.tenant_id === currentTenant.id)
+        .map((c) => c.name.toLowerCase().trim())
+    );
+
+    const toInsert: Category[] = defaultStandardCategories
+      .filter((cat) => !existingNames.has(cat.name.toLowerCase().trim()))
+      .map((cat, idx) => ({
+        ...cat,
+        id: `c-${Date.now()}-${idx + 1}`,
+        tenant_id: currentTenant.id,
+        created_at: new Date().toISOString(),
+      }));
+
+    if (toInsert.length === 0) return 0;
+
+    setRawCategories((prev) => [...prev, ...toInsert]);
+    logAudit(
+      'CREATE',
+      'category' as any,
+      `Auto-generate ${toInsert.length} pos kategori standar untuk scope ${currentTenant.name}`
+    );
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('categories').insert(toInsert);
+      } catch (err) {
+        console.warn('Supabase generate categories error:', err);
+      }
+    }
+
+    return toInsert.length;
   };
 
   const addSavingsGoal = async (
@@ -1010,6 +1056,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addCategory,
         updateCategory,
         deleteCategory,
+        generateDefaultCategories,
         addSavingsGoal,
         updateSavingsGoal,
         deleteSavingsGoal,
