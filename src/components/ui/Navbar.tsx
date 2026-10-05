@@ -58,14 +58,13 @@ export const Navbar: React.FC = () => {
     .filter((t) => isSuperadmin || t.id === currentUser.tenant_id)
     .map((t) => ({
       value: t.id,
-      label: isSuperadmin ? `${t.name}` : t.name,
-      badge: isSuperadmin
-        ? 'Global'
-        : t.type === 'household'
-        ? 'Keluarga'
-        : t.type === 'personal'
-        ? 'Pribadi'
-        : 'Organisasi',
+      label: t.name,
+      badge:
+        t.type === 'household'
+          ? 'Keluarga'
+          : t.type === 'personal'
+          ? 'Pribadi'
+          : 'Organisasi',
     }));
 
   return (

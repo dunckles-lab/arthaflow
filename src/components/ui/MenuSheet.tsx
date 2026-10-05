@@ -66,13 +66,12 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
     .map((t) => ({
       value: t.id,
       label: t.name,
-      badge: isSuperadmin
-        ? 'Global'
-        : t.type === 'household'
-        ? 'Keluarga'
-        : t.type === 'personal'
-        ? 'Pribadi'
-        : 'Organisasi',
+      badge:
+        t.type === 'household'
+          ? 'Keluarga'
+          : t.type === 'personal'
+          ? 'Pribadi'
+          : 'Organisasi',
     }));
 
   return (
