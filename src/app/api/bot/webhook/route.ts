@@ -63,19 +63,18 @@ export async function POST(req: NextRequest) {
     if (rawText === '/help' || rawText.toLowerCase() === 'help' || rawText.toLowerCase() === 'bantuan') {
       await sendTelegramMessage(
         chatId,
-        `📖 <b>Panduan Format Pencatatan ArthaFlow:</b>\n\n` +
-        `<b>1. Pengeluaran:</b>\n` +
-        `• <code>keluar 50rb makan siang bca</code>\n` +
-        `• <code>beli kopi 25k cash</code>\n` +
-        `• <code>byr listrik 350.000 mandiri</code>\n\n` +
-        `<b>2. Pemasukan:</b>\n` +
+        `📖 <b>Panduan Perintah & Format ArthaFlow:</b>\n\n` +
+        `<b>1. Pencatatan Cepat:</b>\n` +
+        `• <code>keluar 50rb makan siang muamalat</code>\n` +
         `• <code>masuk 5jt gaji bca</code>\n` +
-        `• <code>terima 500k refund tiket cash</code>\n\n` +
-        `<b>3. Transfer Antar Rekening:</b>\n` +
-        `• <code>tf 100k bca ke gopay</code>\n` +
-        `• <code>transfer 500rb mandiri ovo</code>\n\n` +
-        `<b>4. Perintah Tambahan:</b>\n` +
-        `• <code>/saldo</code> — Lihat ringkasan saldo seluruh rekening\n` +
+        `• <code>tf 100k bca ke gopay</code>\n\n` +
+        `<b>2. Kelola Ruang Buku (Scope):</b>\n` +
+        `• <code>/scope</code> — Lihat dan ganti ruang buku (Pribadi, Keluarga, Usaha)\n` +
+        `• <code>/scope pribadi</code> — Pindah langsung ke scope Pribadi\n` +
+        `• <code>/scope keluarga</code> — Pindah langsung ke scope Keluarga\n` +
+        `• <code>/scope usaha</code> — Pindah langsung ke scope Organisasi/Usaha\n\n` +
+        `<b>3. Laporan & Saldo:</b>\n` +
+        `• <code>/saldo</code> — Lihat ringkasan saldo seluruh rekening aktif\n` +
         `• <code>/rekap</code> — Lihat rekap transaksi hari ini & bulan ini\n` +
         `• <code>/pair KODE</code> — Hubungkan akun Telegram ke ArthaFlow`
       );
@@ -115,6 +114,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
+    // Handle /scope, /switch, /ruang, /pindah command
+    if (
+      rawText.startsWith('/scope') ||
+      rawText.startsWith('/switch') ||
+      rawText.startsWith('/ruang') ||
+      rawText.startsWith('/pindah') ||
+      rawText.toLowerCase() === 'scope' ||
+      rawText.toLowerCase() === 'switch'
+    ) {
+      const parts = rawText.split(/\s+/);
+      const hint = parts.length > 1 ? parts.slice(1).join(' ') : null;
+      await handleScope(chatId, telegramUserId, binding, hint, supabase);
+      return NextResponse.json({ ok: true });
+    }
+
     // Handle /saldo command
     if (rawText === '/saldo' || rawText.toLowerCase() === 'saldo' || rawText.toLowerCase() === 'cek saldo') {
       await handleSaldo(chatId, binding, supabase);
@@ -132,10 +146,11 @@ export async function POST(req: NextRequest) {
     if (!parsed) {
       await sendTelegramMessage(
         chatId,
-        `❓ Format tidak dikenali. Ketik <code>/help</code> untuk contoh atau format:\n` +
-        `• <code>keluar 50rb makan siang bca</code>\n` +
+        `❓ Format tidak dikenali. Ketik <code>/help</code> untuk panduan atau coba:\n` +
+        `• <code>keluar 50rb makan siang muamalat</code>\n` +
         `• <code>masuk 2jt bonus bca</code>\n` +
-        `• <code>tf 100k bca ke gopay</code>`
+        `• <code>/saldo</code> untuk cek saldo\n` +
+        `• <code>/scope</code> untuk ganti ruang buku`
       );
       return NextResponse.json({ ok: true });
     }
@@ -162,6 +177,13 @@ export async function GET() {
 // Fallback in-memory bindings cache if DB is not yet migrated
 const activeBindings = new Map<string, { telegram_user_id: string; user_id: string; tenant_id: string; telegram_username?: string }>();
 
+function getTenantEmoji(type?: string): string {
+  if (type === 'household') return '🏠';
+  if (type === 'personal') return '👤';
+  if (type === 'organization') return '🏢';
+  return '📁';
+}
+
 /**
  * Handle user account pairing
  */
@@ -174,7 +196,6 @@ async function handlePairing(
 ) {
   try {
     let code = rawCode.trim();
-    // Normalize code if user enters just numbers e.g. 520943 -> AF-520943
     if (/^\d{6}$/.test(code)) {
       code = `AF-${code}`;
     }
@@ -204,7 +225,6 @@ async function handlePairing(
         if (!pErr && pendingRecord) {
           targetUserId = pendingRecord.user_id;
           targetTenantId = pendingRecord.tenant_id;
-          // Delete used pending pairing record
           await supabase.from('telegram_bindings').delete().eq('id', pendingRecord.id);
         }
       } catch (e) {
@@ -224,11 +244,10 @@ async function handlePairing(
         if (!error && data) {
           targetUserId = data.user_id;
           targetTenantId = data.tenant_id;
-          // Delete used pairing code
           await supabase.from('telegram_pairing_codes').delete().eq('code', upperCode);
         }
       } catch (e) {
-        // Ignored if table doesn't exist
+        // Ignored
       }
     }
 
@@ -240,6 +259,11 @@ async function handlePairing(
         `Silakan buka dashboard Web ArthaFlow, buka modal <b>Integrasi Bot Telegram</b>, lalu kirim kode pairing terbaru ke sini.`
       );
       return;
+    }
+
+    // Default tenant fallback if none
+    if (!targetTenantId) {
+      targetTenantId = 't-personal';
     }
 
     // Update in-memory bindings cache
@@ -266,16 +290,32 @@ async function handlePairing(
       }
     }
 
+    // Fetch tenant name
+    let tenantName = 'Dompet Pribadi';
+    if (supabase) {
+      const { data: tData } = await supabase.from('tenants').select('*').eq('id', targetTenantId).maybeSingle();
+      if (tData) tenantName = `${getTenantEmoji(tData.type)} ${tData.name}`;
+    }
+
     await sendTelegramMessage(
       chatId,
       `🎉 <b>Akun Berhasil Terhubung!</b>\n\n` +
-      `Akun Telegram Anda (@${telegramUsername}) kini terhubung ke ruang buku ArthaFlow Anda secara aman & terisolasi.\n\n` +
-      `Sekarang Anda dapat langsung mencatat transaksi:\n` +
-      `• <code>keluar 35rb sarapan pagi bca</code>\n` +
-      `• <code>masuk 1.5jt freelance bca</code>\n` +
-      `• <code>tf 50k bca ke gopay</code>\n` +
-      `• <code>/saldo</code> untuk cek saldo rekening Anda\n` +
-      `• <code>/rekap</code> untuk rekap keuangan Anda`
+      `Akun Telegram Anda (@${telegramUsername}) kini terhubung ke ruang buku <b>${tenantName}</b> di ArthaFlow.\n\n` +
+      `📌 <b>Perintah yang dapat langsung digunakan:</b>\n` +
+      `• <code>/saldo</code> — Cek saldo rekening Anda\n` +
+      `• <code>/scope</code> — Ganti ruang buku (Pribadi / Keluarga / Usaha)\n` +
+      `• <code>keluar 35rb sarapan pagi muamalat</code>\n` +
+      `• <code>masuk 1.5jt freelance muamalat</code>\n` +
+      `• <code>tf 50k muamalat ke gopay</code>\n` +
+      `• <code>/rekap</code> — Rekapitulasi pengeluaran & pemasukan`,
+      {
+        inline_keyboard: [
+          [
+            { text: '💳 Cek Saldo Sekarang', callback_data: 'check_saldo' },
+            { text: '🔄 Pilih Ruang Buku', callback_data: 'switch_scope' },
+          ]
+        ]
+      }
     );
   } catch (err) {
     console.error('Pairing error:', err);
@@ -304,7 +344,6 @@ async function getBinding(telegramUserId: string, supabase: any) {
     }
   }
 
-  // Check in-memory bindings
   if (activeBindings.has(telegramUserId)) {
     return activeBindings.get(telegramUserId);
   }
@@ -313,15 +352,140 @@ async function getBinding(telegramUserId: string, supabase: any) {
 }
 
 /**
+ * Handle Scope Switch (/scope command)
+ */
+async function handleScope(
+  chatId: number | string,
+  telegramUserId: string,
+  binding: any,
+  targetScopeHint: string | null,
+  supabase: any
+) {
+  try {
+    const { data: tenants, error: tErr } = await supabase.from('tenants').select('*').order('created_at', { ascending: true });
+    if (tErr || !tenants || tenants.length === 0) {
+      await sendTelegramMessage(chatId, `⚠️ Belum ada ruang buku (scope) yang terdaftar di database.`);
+      return;
+    }
+
+    // If user provided a specific scope hint: e.g. /scope pribadi, /scope keluarga, /scope 1
+    if (targetScopeHint) {
+      const hint = targetScopeHint.trim().toLowerCase();
+      let matchedTenant = null;
+
+      if (/^\d+$/.test(hint)) {
+        const idx = parseInt(hint, 10) - 1;
+        if (idx >= 0 && idx < tenants.length) {
+          matchedTenant = tenants[idx];
+        }
+      }
+
+      if (!matchedTenant) {
+        matchedTenant = tenants.find((t: any) =>
+          t.id.toLowerCase() === hint ||
+          t.name.toLowerCase().includes(hint) ||
+          (t.type && t.type.toLowerCase().includes(hint))
+        );
+      }
+
+      if (matchedTenant) {
+        await switchBindingScope(chatId, telegramUserId, binding, matchedTenant, supabase);
+        return;
+      }
+    }
+
+    // Render interactive scope selection buttons
+    const currentTenant = tenants.find((t: any) => t.id === binding.tenant_id) || tenants[0];
+
+    const keyboardButtons = tenants.map((t: any) => {
+      const isCurrent = t.id === binding.tenant_id;
+      const label = `${getTenantEmoji(t.type)} ${t.name}${isCurrent ? ' (Aktif ✅)' : ''}`;
+      return [{ text: label, callback_data: `set_scope:${t.id}` }];
+    });
+
+    const scopeMsg =
+      `📍 <b>Pengaturan Ruang Buku (Scope Keuangan):</b>\n\n` +
+      `Scope saat ini: <b>${getTenantEmoji(currentTenant.type)} ${currentTenant.name}</b>\n\n` +
+      `Pilih ruang buku di bawah ini untuk berpindah ruang pencatatan:`;
+
+    await sendTelegramMessage(chatId, scopeMsg, { inline_keyboard: keyboardButtons });
+  } catch (err: any) {
+    await sendTelegramMessage(chatId, `❌ Gagal memuat daftar ruang buku: ${err.message}`);
+  }
+}
+
+/**
+ * Switch binding's active tenant scope
+ */
+async function switchBindingScope(
+  chatId: number | string,
+  telegramUserId: string,
+  binding: any,
+  targetTenant: any,
+  supabase: any,
+  messageId?: number
+) {
+  try {
+    if (supabase) {
+      await supabase
+        .from('telegram_bindings')
+        .update({ tenant_id: targetTenant.id })
+        .eq('telegram_user_id', String(telegramUserId));
+    }
+
+    if (activeBindings.has(telegramUserId)) {
+      const b = activeBindings.get(telegramUserId);
+      if (b) b.tenant_id = targetTenant.id;
+    }
+    binding.tenant_id = targetTenant.id;
+
+    const emoji = getTenantEmoji(targetTenant.type);
+    const text =
+      `✅ <b>Ruang Buku Berhasil Diubah!</b>\n\n` +
+      `Scope aktif sekarang: <b>${emoji} ${targetTenant.name}</b>\n\n` +
+      `Mulai sekarang, seluruh pencatatan transaksi, cek saldo (<code>/saldo</code>), dan rekap (<code>/rekap</code>) akan masuk ke ruang buku ini.`;
+
+    const inlineKeyboard = {
+      inline_keyboard: [
+        [
+          { text: '💳 Cek Saldo Scope Ini', callback_data: 'check_saldo' },
+          { text: '🔄 Ganti Scope Lain', callback_data: 'switch_scope' },
+        ]
+      ]
+    };
+
+    if (messageId && chatId) {
+      await editTelegramMessage(chatId, messageId, text, inlineKeyboard);
+    } else {
+      await sendTelegramMessage(chatId, text, inlineKeyboard);
+    }
+  } catch (e: any) {
+    console.error('Switch scope error:', e);
+    await sendTelegramMessage(chatId, `❌ Gagal mengganti ruang buku: ${e.message}`);
+  }
+}
+
+/**
  * Show balances of wallets in the tenant
  */
 async function handleSaldo(chatId: number | string, binding: any, supabase: any) {
   try {
+    // 1. Fetch current tenant info
+    let tenantName = 'Ruang Buku';
+    let tenantType = 'personal';
+    if (supabase) {
+      const { data: tData } = await supabase.from('tenants').select('*').eq('id', binding.tenant_id).maybeSingle();
+      if (tData) {
+        tenantName = tData.name;
+        tenantType = tData.type;
+      }
+    }
+
+    // 2. Fetch wallets (do NOT filter by is_active since DB schema does not have is_active column)
     const { data: wallets, error: wError } = await supabase
       .from('wallets')
       .select('*')
-      .eq('tenant_id', binding.tenant_id)
-      .eq('is_active', true);
+      .eq('tenant_id', binding.tenant_id);
 
     const { data: savings, error: sError } = await supabase
       .from('savings_goals')
@@ -335,9 +499,17 @@ async function handleSaldo(chatId: number | string, binding: any, supabase: any)
     if (!wallets || wallets.length === 0) {
       await sendTelegramMessage(
         chatId,
-        `💳 <b>Ringkasan Saldo Rekening & Tabungan</b>\n\n` +
-        `⚠️ <i>Belum ada rekening atau dompet yang terdaftar di ruang buku Anda.</i>\n\n` +
-        `Silakan tambahkan rekening baru terlebih dahulu melalui dashboard web ArthaFlow.`
+        `💳 <b>Ringkasan Saldo Rekening & Tabungan</b>\n` +
+        `📂 <i>Ruang Buku: ${getTenantEmoji(tenantType)} ${tenantName}</i>\n\n` +
+        `⚠️ <i>Belum ada rekening atau dompet yang terdaftar di ruang buku ini.</i>\n\n` +
+        `Silakan tambahkan rekening baru di web dashboard, atau ganti ruang buku dengan <code>/scope</code>.`,
+        {
+          inline_keyboard: [
+            [
+              { text: '🔄 Ganti Ruang Buku (Scope)', callback_data: 'switch_scope' },
+            ]
+          ]
+        }
       );
       return;
     }
@@ -361,7 +533,11 @@ async function handleSaldo(chatId: number | string, binding: any, supabase: any)
       }
     }
 
-    let msg = `💳 <b>Ringkasan Saldo Rekening & Dompet</b>\n\n${walletListText}\n💰 <b>Total Saldo Kas/Bank:</b> Rp ${totalWallets.toLocaleString('id-ID')}`;
+    let msg =
+      `💳 <b>Ringkasan Saldo Rekening & Dompet</b>\n` +
+      `📂 <i>Ruang Buku: ${getTenantEmoji(tenantType)} ${tenantName}</i>\n\n` +
+      `${walletListText}\n` +
+      `💰 <b>Total Saldo Kas/Bank:</b> Rp ${totalWallets.toLocaleString('id-ID')}`;
 
     if (savingsListText) {
       msg += `\n\n🏦 <b>Alokasi Target Tabungan:</b>\n${savingsListText}\n💎 <b>Total Tabungan:</b> Rp ${totalSavings.toLocaleString('id-ID')}`;
@@ -369,7 +545,14 @@ async function handleSaldo(chatId: number | string, binding: any, supabase: any)
 
     msg += `\n\n📈 <b>Total Kekayaan Bersih:</b> Rp ${(totalWallets + totalSavings).toLocaleString('id-ID')}`;
 
-    await sendTelegramMessage(chatId, msg);
+    await sendTelegramMessage(chatId, msg, {
+      inline_keyboard: [
+        [
+          { text: '🔄 Ganti Scope', callback_data: 'switch_scope' },
+          { text: '📊 Rekap Keuangan', callback_data: 'check_rekap' },
+        ]
+      ]
+    });
   } catch (err: any) {
     await sendTelegramMessage(chatId, `❌ Gagal mengambil saldo: ${err.message}`);
   }
@@ -380,6 +563,16 @@ async function handleSaldo(chatId: number | string, binding: any, supabase: any)
  */
 async function handleRekap(chatId: number | string, binding: any, supabase: any) {
   try {
+    let tenantName = 'Ruang Buku';
+    let tenantType = 'personal';
+    if (supabase) {
+      const { data: tData } = await supabase.from('tenants').select('*').eq('id', binding.tenant_id).maybeSingle();
+      if (tData) {
+        tenantName = tData.name;
+        tenantType = tData.type;
+      }
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
     const firstDayMonth = `${todayStr.substring(0, 7)}-01`;
 
@@ -392,7 +585,8 @@ async function handleRekap(chatId: number | string, binding: any, supabase: any)
     if (error || !transactions || transactions.length === 0) {
       await sendTelegramMessage(
         chatId,
-        `📊 <b>Rekapitulasi Keuangan ArthaFlow</b>\n\n` +
+        `📊 <b>Rekapitulasi Keuangan ArthaFlow</b>\n` +
+        `📂 <i>Ruang Buku: ${getTenantEmoji(tenantType)} ${tenantName}</i>\n\n` +
         `📅 <b>Hari Ini (${todayStr}):</b>\n` +
         `• Pemasukan: 🟢 Rp 0\n` +
         `• Pengeluaran: 🔴 Rp 0\n` +
@@ -400,7 +594,15 @@ async function handleRekap(chatId: number | string, binding: any, supabase: any)
         `📆 <b>Bulan Ini (${todayStr.substring(0, 7)}):</b>\n` +
         `• Total Masuk: 🟢 Rp 0\n` +
         `• Total Keluar: 🔴 Rp 0\n` +
-        `• Net Bulan Ini: <b>Rp 0</b>`
+        `• Net Bulan Ini: <b>Rp 0</b>`,
+        {
+          inline_keyboard: [
+            [
+              { text: '💳 Cek Saldo', callback_data: 'check_saldo' },
+              { text: '🔄 Ganti Scope', callback_data: 'switch_scope' },
+            ]
+          ]
+        }
       );
       return;
     }
@@ -421,7 +623,8 @@ async function handleRekap(chatId: number | string, binding: any, supabase: any)
     }
 
     const msg =
-      `📊 <b>Rekapitulasi Keuangan ArthaFlow</b>\n\n` +
+      `📊 <b>Rekapitulasi Keuangan ArthaFlow</b>\n` +
+      `📂 <i>Ruang Buku: ${getTenantEmoji(tenantType)} ${tenantName}</i>\n\n` +
       `📅 <b>Hari Ini (${todayStr}):</b>\n` +
       `• Pemasukan: 🟢 Rp ${todayIncome.toLocaleString('id-ID')}\n` +
       `• Pengeluaran: 🔴 Rp ${todayExpense.toLocaleString('id-ID')}\n` +
@@ -431,7 +634,14 @@ async function handleRekap(chatId: number | string, binding: any, supabase: any)
       `• Total Keluar: 🔴 Rp ${monthExpense.toLocaleString('id-ID')}\n` +
       `• Net Bulan Ini: <b>Rp ${(monthIncome - monthExpense).toLocaleString('id-ID')}</b>`;
 
-    await sendTelegramMessage(chatId, msg);
+    await sendTelegramMessage(chatId, msg, {
+      inline_keyboard: [
+        [
+          { text: '💳 Cek Saldo', callback_data: 'check_saldo' },
+          { text: '🔄 Ganti Scope', callback_data: 'switch_scope' },
+        ]
+      ]
+    });
   } catch (err: any) {
     await sendTelegramMessage(chatId, `❌ Gagal mengambil rekap: ${err.message}`);
   }
@@ -448,12 +658,21 @@ async function executeBotTransaction(
   supabase: any
 ) {
   try {
-    // 1. Fetch available wallets & categories
+    let tenantName = 'Ruang Buku';
+    let tenantType = 'personal';
+    if (supabase) {
+      const { data: tData } = await supabase.from('tenants').select('*').eq('id', binding.tenant_id).maybeSingle();
+      if (tData) {
+        tenantName = tData.name;
+        tenantType = tData.type;
+      }
+    }
+
+    // 1. Fetch available wallets & categories for this tenant
     const { data: wallets } = await supabase
       .from('wallets')
       .select('*')
-      .eq('tenant_id', binding.tenant_id)
-      .eq('is_active', true);
+      .eq('tenant_id', binding.tenant_id);
 
     const { data: categories } = await supabase
       .from('categories')
@@ -464,7 +683,15 @@ async function executeBotTransaction(
       await sendTelegramMessage(
         chatId,
         `⚠️ <b>Tidak dapat mencatat transaksi:</b>\n\n` +
-        `Belum ada rekening / dompet aktif di ruang buku ArthaFlow Anda. Silakan tambahkan rekening bank atau dompet terlebih dahulu di web dashboard.`
+        `Belum ada rekening / dompet di ruang buku <b>${getTenantEmoji(tenantType)} ${tenantName}</b>.\n\n` +
+        `Silakan tambahkan rekening bank di web dashboard atau pindah ruang buku dengan <code>/scope</code>.`,
+        {
+          inline_keyboard: [
+            [
+              { text: '🔄 Ganti Ruang Buku (Scope)', callback_data: 'switch_scope' },
+            ]
+          ]
+        }
       );
       return;
     }
@@ -495,7 +722,7 @@ async function executeBotTransaction(
       if (!targetWallet) {
         await sendTelegramMessage(
           chatId,
-          `⚠️ <b>Transfer gagal:</b> Anda membutuhkan minimal 2 rekening terdaftar untuk melakukan transfer antar rekening.`
+          `⚠️ <b>Transfer gagal:</b> Anda membutuhkan minimal 2 rekening terdaftar di ruang buku ini untuk melakukan transfer antar rekening.`
         );
         return;
       }
@@ -574,6 +801,7 @@ async function executeBotTransaction(
 
     const confirmationText =
       `✅ <b>Transaksi Berhasil Dicatat!</b>\n\n` +
+      `📂 <b>Ruang Buku:</b> ${getTenantEmoji(tenantType)} ${tenantName}\n` +
       `• <b>Tipe:</b> ${typeLabel}\n` +
       `• <b>Nominal:</b> <b>Rp ${parsed.amount.toLocaleString('id-ID')}</b>\n` +
       `• <b>Catatan:</b> ${parsed.notes}\n` +
@@ -588,6 +816,9 @@ async function executeBotTransaction(
           { text: '🗑 Batalkan Transaksi', callback_data: `cancel_tx:${generatedTxId}` },
           { text: '📊 Cek Saldo', callback_data: 'check_saldo' },
         ],
+        [
+          { text: '🔄 Ganti Scope', callback_data: 'switch_scope' },
+        ]
       ],
     };
 
@@ -627,11 +858,41 @@ async function handleCallbackQuery(cb: any) {
     } catch (e: any) {
       await answerCallbackQuery(callbackQueryId, `Transaksi telah dibatalkan.`);
     }
+  } else if (data.startsWith('set_scope:')) {
+    const targetTenantId = data.split(':')[1];
+    const binding = await getBinding(telegramUserId, supabase);
+    if (!binding) {
+      await answerCallbackQuery(callbackQueryId, 'Akun belum terhubung');
+      return;
+    }
+    const { data: tenant } = await supabase.from('tenants').select('*').eq('id', targetTenantId).maybeSingle();
+    if (tenant) {
+      await answerCallbackQuery(callbackQueryId, `Scope diubah ke ${tenant.name}`);
+      await switchBindingScope(chatId, telegramUserId, binding, tenant, supabase, messageId);
+    } else {
+      await answerCallbackQuery(callbackQueryId, 'Scope tidak ditemukan');
+    }
+  } else if (data === 'switch_scope') {
+    const binding = await getBinding(telegramUserId, supabase);
+    if (binding) {
+      await answerCallbackQuery(callbackQueryId);
+      await handleScope(chatId, telegramUserId, binding, null, supabase);
+    } else {
+      await answerCallbackQuery(callbackQueryId, 'Akun belum terhubung');
+    }
   } else if (data === 'check_saldo') {
     const binding = await getBinding(telegramUserId, supabase);
     if (binding) {
       await answerCallbackQuery(callbackQueryId);
       await handleSaldo(chatId, binding, supabase);
+    } else {
+      await answerCallbackQuery(callbackQueryId, 'Akun belum terhubung');
+    }
+  } else if (data === 'check_rekap') {
+    const binding = await getBinding(telegramUserId, supabase);
+    if (binding) {
+      await answerCallbackQuery(callbackQueryId);
+      await handleRekap(chatId, binding, supabase);
     } else {
       await answerCallbackQuery(callbackQueryId, 'Akun belum terhubung');
     }
