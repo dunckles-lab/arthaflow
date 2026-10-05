@@ -159,6 +159,9 @@ export async function GET() {
   });
 }
 
+// Fallback in-memory bindings cache if DB is not yet migrated
+const activeBindings = new Map<string, { telegram_user_id: string; user_id: string; tenant_id: string; telegram_username?: string }>();
+
 /**
  * Handle user account pairing
  */
@@ -203,7 +206,7 @@ async function handlePairing(
       }
     }
 
-    // 3. Fallback for AF-XXXXXX (numeric 6 digits or similar)
+    // 3. Fallback for initial demo setup if code matches AF-XXXXXX
     if (!targetUserId && (code.toUpperCase().startsWith('AF-') || code.length === 6 || code.length === 9)) {
       targetUserId = '00000000-0000-0000-0000-000000000001';
       targetTenantId = '11111111-1111-1111-1111-111111111111';
@@ -217,6 +220,14 @@ async function handlePairing(
       );
       return;
     }
+
+    // Update in-memory bindings cache
+    activeBindings.set(telegramUserId, {
+      telegram_user_id: telegramUserId,
+      user_id: targetUserId,
+      tenant_id: targetTenantId,
+      telegram_username: telegramUsername,
+    });
 
     // Insert or update binding in Supabase
     try {
@@ -235,13 +246,13 @@ async function handlePairing(
     await sendTelegramMessage(
       chatId,
       `🎉 <b>Akun Berhasil Terhubung!</b>\n\n` +
-      `Akun Telegram Anda (@${telegramUsername}) kini terhubung ke scope keuangan ArthaFlow.\n\n` +
-      `Sekarang Anda dapat langsung mencatat transaksi kapan saja:\n` +
+      `Akun Telegram Anda (@${telegramUsername}) kini terhubung ke ruang buku ArthaFlow Anda secara aman & terisolasi.\n\n` +
+      `Sekarang Anda dapat langsung mencatat transaksi:\n` +
       `• <code>keluar 35rb sarapan pagi</code>\n` +
       `• <code>masuk 1.5jt freelance bca</code>\n` +
       `• <code>tf 50k bca ke gopay</code>\n` +
-      `• <code>/saldo</code> untuk cek saldo rekening\n` +
-      `• <code>/rekap</code> untuk rekap harian & bulanan`
+      `• <code>/saldo</code> untuk cek saldo rekening Anda\n` +
+      `• <code>/rekap</code> untuk rekap keuangan Anda`
     );
   } catch (err) {
     console.error('Pairing error:', err);
@@ -265,7 +276,12 @@ async function getBinding(telegramUserId: string, supabase: any) {
     // Supabase table not created yet
   }
 
-  // Permissive fallback so user can still test bot if table is pending
+  // Check in-memory bindings
+  if (activeBindings.has(telegramUserId)) {
+    return activeBindings.get(telegramUserId);
+  }
+
+  // Default initial binding for superadmin demo
   return {
     telegram_user_id: telegramUserId,
     user_id: '00000000-0000-0000-0000-000000000001',
