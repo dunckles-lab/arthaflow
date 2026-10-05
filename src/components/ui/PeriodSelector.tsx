@@ -80,10 +80,10 @@ export const PeriodSelector: React.FC = () => {
       {/* Date Controls per Period */}
       <div className="flex items-center justify-between sm:justify-end gap-2">
         {periodFilter.type === 'daily' && (
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 w-full sm:w-auto justify-between">
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 w-full sm:w-auto justify-between shadow-xs">
             <div className="flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">Tanggal:</span>
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Tanggal:</span>
             </div>
             <input
               type="date"
@@ -91,16 +91,16 @@ export const PeriodSelector: React.FC = () => {
               onChange={(e) =>
                 setPeriodFilter((prev) => ({ ...prev, selectedDate: e.target.value }))
               }
-              className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none text-xs cursor-pointer"
+              className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none text-xs cursor-pointer font-medium"
             />
           </div>
         )}
 
         {periodFilter.type === 'monthly' && (
-          <div className="flex items-center justify-between bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl p-1 w-full sm:w-auto">
+          <div className="flex items-center justify-between bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl p-1 w-full sm:w-auto shadow-xs">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title="Bulan Sebelumnya"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -110,7 +110,7 @@ export const PeriodSelector: React.FC = () => {
             </span>
             <button
               onClick={handleNextMonth}
-              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title="Bulan Berikutnya"
             >
               <ChevronRight className="w-4 h-4" />
@@ -119,10 +119,10 @@ export const PeriodSelector: React.FC = () => {
         )}
 
         {periodFilter.type === 'yearly' && (
-          <div className="flex items-center justify-between bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl p-1 w-full sm:w-auto">
+          <div className="flex items-center justify-between bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl p-1 w-full sm:w-auto shadow-xs">
             <button
               onClick={handlePrevYear}
-              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title="Tahun Sebelumnya"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -132,7 +132,7 @@ export const PeriodSelector: React.FC = () => {
             </span>
             <button
               onClick={handleNextYear}
-              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
+              className="p-1.5 hover:bg-slate-200 dark:hover:bg-[#1e2436] rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors cursor-pointer"
               title="Tahun Berikutnya"
             >
               <ChevronRight className="w-4 h-4" />
@@ -142,25 +142,27 @@ export const PeriodSelector: React.FC = () => {
 
         {periodFilter.type === 'custom' && (
           <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <div className="flex-1 sm:flex-initial flex items-center gap-1 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200">
+            <div className="flex-1 sm:flex-initial flex items-center gap-1.5 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <input
                 type="date"
                 value={periodFilter.startDate}
                 onChange={(e) =>
                   setPeriodFilter((prev) => ({ ...prev, startDate: e.target.value }))
                 }
-                className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none text-[11px] w-full"
+                className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none text-xs w-full cursor-pointer font-medium"
               />
             </div>
-            <span className="text-slate-400 text-xs">-</span>
-            <div className="flex-1 sm:flex-initial flex items-center gap-1 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200">
+            <span className="text-slate-400 text-xs font-semibold">-</span>
+            <div className="flex-1 sm:flex-initial flex items-center gap-1.5 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 shadow-xs">
+              <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <input
                 type="date"
                 value={periodFilter.endDate}
                 onChange={(e) =>
                   setPeriodFilter((prev) => ({ ...prev, endDate: e.target.value }))
                 }
-                className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none text-[11px] w-full"
+                className="bg-transparent text-slate-800 dark:text-slate-200 focus:outline-none text-xs w-full cursor-pointer font-medium"
               />
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useFinance } from '@/lib/store';
-import { Users, UserPlus, Trash2, Shield, UserCheck, ShieldAlert, X } from 'lucide-react';
+import { Users, UserPlus, Trash2, Shield, UserCheck, ShieldAlert, X, UserCog } from 'lucide-react';
 import { UserRole } from '@/types';
 import { CustomSelect } from './CustomSelect';
 
@@ -15,7 +15,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { currentTenant, allUsers, addUser, deleteUser, currentUser, tenants } = useFinance();
+  const { currentTenant, allUsers, addUser, deleteUser, currentUser, setCurrentUser, tenants } = useFinance();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -203,24 +203,46 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
               {manageableUsers.map((u) => (
                 <div
                   key={u.id}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] flex items-center justify-between gap-2"
+                  className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
+                    u.id === currentUser.id
+                      ? 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-500/30'
+                      : 'bg-slate-50 dark:bg-[#0a0b10] border-slate-200 dark:border-[#1e2436]'
+                  }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                       <span className="font-semibold text-xs text-slate-900 dark:text-slate-200 truncate">{u.name}</span>
                       {getRoleBadge(u.role)}
+                      {u.id === currentUser.id && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 font-bold">Aktif</span>
+                      )}
                     </div>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">{u.email}</p>
                   </div>
-                  {u.id !== currentUser.id && (
-                    <button
-                      onClick={() => deleteUser(u.id)}
-                      className="p-2 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all shrink-0 cursor-pointer"
-                      title="Hapus Pengguna"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {u.id !== currentUser.id && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setCurrentUser(u);
+                            onClose();
+                          }}
+                          className="px-2 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-semibold transition-all cursor-pointer flex items-center gap-1"
+                          title="Beralih ke akun ini untuk simulasi hak akses"
+                        >
+                          <UserCog className="w-3.5 h-3.5" />
+                          <span>Pilih</span>
+                        </button>
+                        <button
+                          onClick={() => deleteUser(u.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                          title="Hapus Pengguna"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -238,20 +260,49 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-[#1e2436]">
                   {manageableUsers.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-[#12141d]/50 transition-colors">
-                      <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-slate-200">{u.name}</td>
+                    <tr
+                      key={u.id}
+                      className={`transition-colors ${
+                        u.id === currentUser.id
+                          ? 'bg-emerald-500/5 dark:bg-emerald-500/10'
+                          : 'hover:bg-slate-50 dark:hover:bg-[#12141d]/50'
+                      }`}
+                    >
+                      <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-slate-200 flex items-center gap-2">
+                        {u.name}
+                        {u.id === currentUser.id && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 font-bold">
+                            Sesi Aktif
+                          </span>
+                        )}
+                      </td>
                       <td className="py-2.5 px-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">{u.email}</td>
                       <td className="py-2.5 px-3">{getRoleBadge(u.role)}</td>
                       <td className="py-2.5 px-3 text-center">
-                        {u.id !== currentUser.id && (
-                          <button
-                            onClick={() => deleteUser(u.id)}
-                            className="p-1.5 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
-                            title="Hapus Pengguna"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <div className="flex items-center justify-center gap-1.5">
+                          {u.id !== currentUser.id && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setCurrentUser(u);
+                                  onClose();
+                                }}
+                                className="px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1"
+                                title="Beralih ke akun ini untuk pengujian hak akses"
+                              >
+                                <UserCog className="w-3.5 h-3.5" />
+                                <span>Simulasi</span>
+                              </button>
+                              <button
+                                onClick={() => deleteUser(u.id)}
+                                className="p-1.5 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
+                                title="Hapus Pengguna"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

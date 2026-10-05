@@ -1021,6 +1021,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const setCurrentUser = (user: User) => {
     setCurrentUserState(user);
+    if (user.role !== 'superadmin' && user.tenant_id) {
+      const userTenant = tenants.find((t) => t.id === user.tenant_id);
+      if (userTenant) {
+        setCurrentTenantState(userTenant);
+      }
+    }
   };
 
   return (
