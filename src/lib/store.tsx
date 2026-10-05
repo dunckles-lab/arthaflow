@@ -342,7 +342,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         .eq('tenant_id', currentTenant.id)
         .order('date', { ascending: false });
 
-      if (!txError && txData && txData.length > 0) {
+      if (!txError && txData) {
         setRawTransactions(txData);
         setIsLiveDbConnected(true);
       }
@@ -369,6 +369,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         .eq('tenant_id', currentTenant.id);
       if (!sError && savData && savData.length > 0) {
         setRawSavingsGoals(savData);
+      }
+
+      const { data: rulesData, error: rError } = await supabase
+        .from('visibility_rules')
+        .select('*')
+        .eq('tenant_id', currentTenant.id);
+      if (!rError && rulesData && rulesData.length > 0) {
+        setRawVisibilityRules(rulesData);
+      }
+
+      const { data: usersData, error: uError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('tenant_id', currentTenant.id);
+      if (!uError && usersData && usersData.length > 0) {
+        setAllUsers(usersData);
       }
 
       setIsLiveDbConnected(true);
@@ -593,11 +609,29 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map((w) => (w.id === id ? { ...w, ...updates } : w))
     );
     logAudit('UPDATE', 'wallet', `Memperbarui rekening ID ${id}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('wallets').update(updates).eq('id', id);
+      } catch (err) {
+        console.warn('Supabase update wallet error:', err);
+      }
+    }
   };
 
   const deleteWallet = async (id: string) => {
     setRawWallets((prev) => prev.filter((w) => w.id !== id));
     logAudit('DELETE', 'wallet', `Menghapus dompet/rekening ID ${id}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('wallets').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase delete wallet error:', err);
+      }
+    }
   };
 
   const addCategory = async (catData: Omit<Category, 'id' | 'created_at' | 'tenant_id'>) => {
@@ -609,6 +643,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     setRawCategories((prev) => [...prev, newCat]);
     logAudit('CREATE', 'category' as any, `Menambahkan kategori: ${catData.name}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('categories').insert([newCat]);
+      } catch (err) {
+        console.warn('Supabase insert category error:', err);
+      }
+    }
   };
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
@@ -616,11 +659,29 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
     );
     logAudit('UPDATE', 'category' as any, `Memperbarui kategori ID ${id}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('categories').update(updates).eq('id', id);
+      } catch (err) {
+        console.warn('Supabase update category error:', err);
+      }
+    }
   };
 
   const deleteCategory = async (id: string) => {
     setRawCategories((prev) => prev.filter((c) => c.id !== id));
     logAudit('DELETE', 'category' as any, `Menghapus kategori ID ${id}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('categories').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase delete category error:', err);
+      }
+    }
   };
 
   const addSavingsGoal = async (
@@ -637,6 +698,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
     setRawSavingsGoals((prev) => [...prev, newGoal]);
     logAudit('CREATE', 'savings', `Membuat target tabungan baru: ${goalData.name}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('savings_goals').insert([newGoal]);
+      } catch (err) {
+        console.warn('Supabase insert savings goal error:', err);
+      }
+    }
   };
 
   const depositToSavings = async (
@@ -664,16 +734,18 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setRawContributions((prev) => [contribution, ...prev]);
 
     // 3. Update savings goal current amount
+    let updatedGoal: SavingsGoal | null = null;
     setRawSavingsGoals((prev) =>
       prev.map((sg) => {
         if (sg.id === goalId) {
           const newCurrent = sg.current_amount + amount;
-          return {
+          updatedGoal = {
             ...sg,
             current_amount: newCurrent,
             is_completed: newCurrent >= sg.target_amount,
             updated_at: new Date().toISOString(),
           };
+          return updatedGoal;
         }
         return sg;
       })
@@ -696,6 +768,23 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setRawTransactions((prev) => [tx, ...prev]);
 
     logAudit('UPDATE', 'savings', `Setoran tabungan ${goalObj?.name || ''} sebesar Rp ${amount.toLocaleString('id-ID')}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('savings_contributions').insert([contribution]);
+        if (updatedGoal) {
+          await supabase.from('savings_goals').update(updatedGoal).eq('id', goalId);
+        }
+        await supabase.from('transactions').insert([tx]);
+        const updatedWallet = rawWallets.find((w) => w.id === walletId);
+        if (updatedWallet) {
+          await supabase.from('wallets').update({ balance: Math.max(0, updatedWallet.balance - amount) }).eq('id', walletId);
+        }
+      } catch (err) {
+        console.warn('Supabase deposit sync error:', err);
+      }
+    }
   };
 
   const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal>) => {
@@ -714,11 +803,29 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
     );
     logAudit('UPDATE', 'savings', `Memperbarui target tabungan ID: ${id}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('savings_goals').update(updates).eq('id', id);
+      } catch (err) {
+        console.warn('Supabase update savings error:', err);
+      }
+    }
   };
 
   const deleteSavingsGoal = async (id: string) => {
     setRawSavingsGoals((prev) => prev.filter((sg) => sg.id !== id));
     logAudit('DELETE', 'savings', `Menghapus target tabungan ID: ${id}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('savings_goals').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase delete savings error:', err);
+      }
+    }
   };
 
   const withdrawFromSavings = async (
@@ -765,6 +872,24 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setRawTransactions((prev) => [tx, ...prev]);
 
     logAudit('UPDATE', 'savings', `Penarikan tabungan ${goalObj?.name || ''} sebesar Rp ${amount.toLocaleString('id-ID')}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('transactions').insert([tx]);
+        const updatedGoal = rawSavingsGoals.find((g) => g.id === goalId);
+        if (updatedGoal) {
+          const newCurrent = Math.max(0, updatedGoal.current_amount - amount);
+          await supabase.from('savings_goals').update({ current_amount: newCurrent, is_completed: newCurrent >= updatedGoal.target_amount }).eq('id', goalId);
+        }
+        const updatedWallet = rawWallets.find((w) => w.id === walletId);
+        if (updatedWallet) {
+          await supabase.from('wallets').update({ balance: updatedWallet.balance + amount }).eq('id', walletId);
+        }
+      } catch (err) {
+        console.warn('Supabase withdraw sync error:', err);
+      }
+    }
   };
 
   const updateVisibilityRule = async (rule: VisibilityRule) => {
@@ -784,6 +909,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       'visibility',
       `Admin memperbarui hak visibilitas data untuk user: ${targetUser?.name || rule.target_user_id}`
     );
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('visibility_rules').upsert([rule]);
+      } catch (err) {
+        console.warn('Supabase visibility rule error:', err);
+      }
+    }
   };
 
   const addUser = async (userData: Omit<User, 'id' | 'created_at'>) => {
@@ -812,12 +946,32 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setRawVisibilityRules((prev) => [...prev, defaultRule]);
 
     logAudit('CREATE', 'user', `Menambahkan akun anggota/partner baru: ${userData.name} (${userData.role})`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('users').insert([newUser]);
+        await supabase.from('visibility_rules').insert([defaultRule]);
+      } catch (err) {
+        console.warn('Supabase add user error:', err);
+      }
+    }
   };
 
   const deleteUser = async (userId: string) => {
     setAllUsers((prev) => prev.filter((u) => u.id !== userId));
     setRawVisibilityRules((prev) => prev.filter((r) => r.target_user_id !== userId));
     logAudit('DELETE', 'user', `Menghapus akses user ID: ${userId}`);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        await supabase.from('users').delete().eq('id', userId);
+        await supabase.from('visibility_rules').delete().eq('target_user_id', userId);
+      } catch (err) {
+        console.warn('Supabase delete user error:', err);
+      }
+    }
   };
 
   const setCurrentTenant = (tenant: Tenant) => {
