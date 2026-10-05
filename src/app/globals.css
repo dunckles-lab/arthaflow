@@ -48,12 +48,12 @@ body {
 }
 
 /* Allow text selection in inputs and content */
-input, textarea, p, span, td, th, h1, h2, h3, h4, h5, h6 {
+input, textarea, p, span, td, th, h1, h2, h3, h4, h5, h6, pre, code {
   user-select: text;
   -webkit-user-select: text;
 }
 
-/* Global Beautiful Select Styling for Native Fallbacks */
+/* Global Select Styling for Native Fallbacks */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -104,14 +104,19 @@ html.light body,
 
 /* Subtle Secondary Containers (e.g. inner cards, pill backgrounds) */
 [data-theme="light"] [class*="bg-[#161926]"],
-[data-theme="light"] [class*="bg-[#1a1e2e]"] {
+[data-theme="light"] [class*="bg-[#1a1e2e]"],
+[data-theme="light"] [class*="bg-[#1e2436]"] {
   background-color: #f1f5f9 !important;
+  color: #1e293b !important;
 }
 
 /* Hovers & Active States */
 [data-theme="light"] [class*="hover:bg-[#1e2436]"]:hover,
-[data-theme="light"] [class*="hover:bg-[#161926]"]:hover {
+[data-theme="light"] [class*="hover:bg-[#161926]"]:hover,
+[data-theme="light"] [class*="hover:bg-[#12141d]"]:hover,
+[data-theme="light"] [class*="hover:bg-slate-700"]:hover {
   background-color: #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
 [data-theme="light"] [class*="active:bg-[#161926]"]:active {
@@ -140,6 +145,28 @@ html.light body,
 [data-theme="light"] .text-slate-500,
 [data-theme="light"] .text-slate-600 {
   color: #64748b !important;
+}
+
+/* Modal Close Buttons & Icon Buttons */
+[data-theme="light"] .modal-close-btn {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .modal-close-btn:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Badges across Selectbox and Components */
+[data-theme="light"] .select-badge {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .select-label {
+  color: #334155 !important;
 }
 
 /* Inputs, Textareas & Form Controls */
@@ -191,6 +218,14 @@ html.light body,
 [data-theme="light"] .select-option-item:hover {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
+}
+
+/* Code & Pre Blocks in Modals */
+[data-theme="light"] pre,
+[data-theme="light"] code {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
 }
 
 /* Chart Tooltips & Cards in Light Mode */

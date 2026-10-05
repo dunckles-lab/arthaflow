@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FinanceProvider, useFinance } from '@/lib/store';
 import { Navbar } from '@/components/ui/Navbar';
 import { PeriodSelector } from '@/components/ui/PeriodSelector';
@@ -11,13 +11,30 @@ import { SavingsSection } from '@/components/ui/SavingsSection';
 import { TransactionList } from '@/components/ui/TransactionList';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 import { TransactionModal } from '@/components/ui/TransactionModal';
+import { SupabaseSetupModal } from '@/components/ui/SupabaseSetupModal';
 import { LoginPage } from '@/components/ui/LoginPage';
-import { Layers, Shield } from 'lucide-react';
+import { Layers, Shield, AlertTriangle, Database } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
-  const { currentUser, currentTenant, getVisibilityForUser, isAuthenticated, isAuthChecking } = useFinance();
+  const {
+    currentUser,
+    currentTenant,
+    getVisibilityForUser,
+    isAuthenticated,
+    isAuthChecking,
+    isLiveDbConnected,
+    isDbSetupRequired,
+  } = useFinance();
   const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'wallets' | 'savings'>('overview');
   const [isMobileTxOpen, setIsMobileTxOpen] = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+
+  // Automatically prompt setup modal if DB is missing
+  useEffect(() => {
+    if (isDbSetupRequired && isAuthenticated && !isAuthChecking) {
+      setIsSetupModalOpen(true);
+    }
+  }, [isDbSetupRequired, isAuthenticated, isAuthChecking]);
 
   // 1. Loading state while verifying active session
   if (isAuthChecking) {
@@ -71,6 +88,30 @@ const DashboardContent: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Database Setup Alert Banner if DB is not live */}
+        {!isLiveDbConnected && (
+          <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-200 shadow-lg shadow-amber-500/5 animate-in fade-in duration-200">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="font-bold text-amber-100 text-xs sm:text-sm">Database Supabase Belum Diinisialisasi</p>
+                <p className="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
+                  Penyimpanan lokal telah dinonaktifkan. Jalankan 1x migrasi SQL agar transaksi tersimpan di database cloud dan otomatis tersinkronisasi di semua perangkat Anda.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsSetupModalOpen(true)}
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 cursor-pointer shadow-md shadow-amber-500/20 transition-all text-center flex items-center justify-center gap-1.5"
+            >
+              <Database className="w-3.5 h-3.5" />
+              Lihat Tutorial &amp; Setup SQL
+            </button>
+          </div>
+        )}
 
         {/* Desktop View: Full Sections */}
         <div className="hidden md:block space-y-6">
@@ -129,6 +170,9 @@ const DashboardContent: React.FC = () => {
 
       {/* Mobile Quick Action Transaction Modal */}
       <TransactionModal isOpen={isMobileTxOpen} onClose={() => setIsMobileTxOpen(false)} />
+
+      {/* Supabase Interactive Setup Modal */}
+      <SupabaseSetupModal isOpen={isSetupModalOpen} onClose={() => setIsSetupModalOpen(false)} />
 
       {/* Desktop Footer */}
       <footer className="hidden md:block border-t border-[#1e2436] py-6 px-4 text-center text-xs text-slate-500 bg-[#0a0b10]">

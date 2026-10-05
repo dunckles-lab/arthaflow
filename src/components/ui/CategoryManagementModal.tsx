@@ -117,7 +117,7 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e2436] hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 cursor-pointer transition-colors modal-close-btn"
           >
             <X className="w-4 h-4" />
           </button>

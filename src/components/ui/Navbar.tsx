@@ -21,7 +21,7 @@ import { VisibilityConfigModal } from './VisibilityConfigModal';
 import { UserManagementModal } from './UserManagementModal';
 import { AuditLogModal } from './AuditLogModal';
 import { ExportModal } from './ExportModal';
-import { DatabaseConfigModal } from './DatabaseConfigModal';
+import { SupabaseSetupModal } from './SupabaseSetupModal';
 import { CategoryManagementModal } from './CategoryManagementModal';
 import { TelegramIntegrationModal } from './TelegramIntegrationModal';
 import { MenuSheet } from './MenuSheet';
@@ -261,7 +261,7 @@ export const Navbar: React.FC = () => {
       <UserManagementModal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} />
       <AuditLogModal isOpen={isAuditModalOpen} onClose={() => setIsAuditModalOpen(false)} />
       <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
-      <DatabaseConfigModal isOpen={isDbModalOpen} onClose={() => setIsDbModalOpen(false)} />
+      <SupabaseSetupModal isOpen={isDbModalOpen} onClose={() => setIsDbModalOpen(false)} />
 
       {/* Mobile Slide-up Menu Drawer */}
       <MenuSheet

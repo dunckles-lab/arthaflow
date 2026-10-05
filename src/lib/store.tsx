@@ -82,6 +82,8 @@ interface FinanceContextType {
 
   // System & Connection State
   isLiveDbConnected: boolean;
+  isDbSetupRequired: boolean;
+  setIsDbSetupRequired: (val: boolean) => void;
   syncStatus: 'synced' | 'syncing' | 'offline';
   lastSyncTime: Date | null;
   refreshData: () => Promise<void>;
@@ -249,6 +251,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [rawAuditLogs, setRawAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
 
   const [isLiveDbConnected, setIsLiveDbConnected] = useState<boolean>(false);
+  const [isDbSetupRequired, setIsDbSetupRequired] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(new Date());
 
@@ -262,67 +265,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     endDate: today.toISOString().split('T')[0],
   });
 
-  // Load initial local storage data if available
+  // Purge legacy financial data from localStorage to ensure pure database persistence
   useEffect(() => {
     try {
-      const savedTenant = localStorage.getItem('arthaflow_tenant');
-      const savedUser = localStorage.getItem('arthaflow_user');
-      const savedWallets = localStorage.getItem('arthaflow_wallets');
-      const savedCategories = localStorage.getItem('arthaflow_categories');
-      const savedTransactions = localStorage.getItem('arthaflow_transactions');
-      const savedSavings = localStorage.getItem('arthaflow_savings');
-      const savedContributions = localStorage.getItem('arthaflow_contributions');
-      const savedRules = localStorage.getItem('arthaflow_visibility_rules');
-      const savedLogs = localStorage.getItem('arthaflow_audit_logs');
-      const savedAllUsers = localStorage.getItem('arthaflow_users');
-
-      if (savedTenant) setCurrentTenantState(JSON.parse(savedTenant));
-      if (savedUser) setCurrentUserState(JSON.parse(savedUser));
-      if (savedWallets) setRawWallets(JSON.parse(savedWallets));
-      if (savedCategories) setRawCategories(JSON.parse(savedCategories));
-      if (savedTransactions) setRawTransactions(JSON.parse(savedTransactions));
-      if (savedSavings) setRawSavingsGoals(JSON.parse(savedSavings));
-      if (savedContributions) setRawContributions(JSON.parse(savedContributions));
-      if (savedRules) setRawVisibilityRules(JSON.parse(savedRules));
-      if (savedLogs) setRawAuditLogs(JSON.parse(savedLogs));
-      if (savedAllUsers) setAllUsers(JSON.parse(savedAllUsers));
+      const keysToPurge = [
+        'arthaflow_tenant',
+        'arthaflow_user',
+        'arthaflow_wallets',
+        'arthaflow_categories',
+        'arthaflow_transactions',
+        'arthaflow_savings',
+        'arthaflow_contributions',
+        'arthaflow_visibility_rules',
+        'arthaflow_audit_logs',
+        'arthaflow_users',
+      ];
+      keysToPurge.forEach((k) => localStorage.removeItem(k));
     } catch (e) {
-      console.warn('Could not read from local storage:', e);
+      console.warn('LocalStorage cleanup skipped:', e);
     }
   }, []);
-
-  // Save to local storage on mutation
-  const persistState = useCallback(() => {
-    try {
-      localStorage.setItem('arthaflow_tenant', JSON.stringify(currentTenant));
-      localStorage.setItem('arthaflow_user', JSON.stringify(currentUser));
-      localStorage.setItem('arthaflow_wallets', JSON.stringify(rawWallets));
-      localStorage.setItem('arthaflow_categories', JSON.stringify(rawCategories));
-      localStorage.setItem('arthaflow_transactions', JSON.stringify(rawTransactions));
-      localStorage.setItem('arthaflow_savings', JSON.stringify(rawSavingsGoals));
-      localStorage.setItem('arthaflow_contributions', JSON.stringify(rawContributions));
-      localStorage.setItem('arthaflow_visibility_rules', JSON.stringify(rawVisibilityRules));
-      localStorage.setItem('arthaflow_audit_logs', JSON.stringify(rawAuditLogs));
-      localStorage.setItem('arthaflow_users', JSON.stringify(allUsers));
-    } catch (e) {
-      console.warn('Could not save to local storage:', e);
-    }
-  }, [
-    currentTenant,
-    currentUser,
-    rawWallets,
-    rawCategories,
-    rawTransactions,
-    rawSavingsGoals,
-    rawContributions,
-    rawVisibilityRules,
-    rawAuditLogs,
-    allUsers,
-  ]);
-
-  useEffect(() => {
-    persistState();
-  }, [persistState]);
 
   // Check Supabase Live Connection and Realtime Subscriptions
   const refreshData = useCallback(async () => {
@@ -330,69 +292,67 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (!supabase || !isSupabaseConfigured()) {
       setIsLiveDbConnected(false);
-      setSyncStatus('synced');
+      setIsDbSetupRequired(true);
+      setSyncStatus('offline');
       setLastSyncTime(new Date());
       return;
     }
 
     try {
-      const { data: txData, error: txError } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('tenant_id', currentTenant.id)
-        .order('date', { ascending: false });
+      // 1. Probe tenants table to detect if tables exist in Supabase
+      const { data: tenantCheck, error: tenantErr } = await supabase
+        .from('tenants')
+        .select('id')
+        .limit(1);
 
-      if (!txError && txData) {
-        setRawTransactions(txData);
-        setIsLiveDbConnected(true);
+      if (tenantErr) {
+        console.warn('Supabase schema missing or inaccessible:', tenantErr.message);
+        setIsLiveDbConnected(false);
+        setIsDbSetupRequired(true);
+        setSyncStatus('offline');
+        return;
       }
 
-      const { data: walletData, error: wError } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('tenant_id', currentTenant.id);
-      if (!wError && walletData && walletData.length > 0) {
-        setRawWallets(walletData);
-      }
-
-      const { data: catData, error: cError } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('tenant_id', currentTenant.id);
-      if (!cError && catData && catData.length > 0) {
-        setRawCategories(catData);
-      }
-
-      const { data: savData, error: sError } = await supabase
-        .from('savings_goals')
-        .select('*')
-        .eq('tenant_id', currentTenant.id);
-      if (!sError && savData && savData.length > 0) {
-        setRawSavingsGoals(savData);
-      }
-
-      const { data: rulesData, error: rError } = await supabase
-        .from('visibility_rules')
-        .select('*')
-        .eq('tenant_id', currentTenant.id);
-      if (!rError && rulesData && rulesData.length > 0) {
-        setRawVisibilityRules(rulesData);
-      }
-
-      const { data: usersData, error: uError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('tenant_id', currentTenant.id);
-      if (!uError && usersData && usersData.length > 0) {
-        setAllUsers(usersData);
-      }
-
+      // If probe passes, schema is active
       setIsLiveDbConnected(true);
+      setIsDbSetupRequired(false);
+
+      // 2. Fetch all collections from Supabase
+      const [
+        { data: txData },
+        { data: walletData },
+        { data: catData },
+        { data: savData },
+        { data: contribData },
+        { data: rulesData },
+        { data: usersData },
+        { data: logsData }
+      ] = await Promise.all([
+        supabase.from('transactions').select('*').eq('tenant_id', currentTenant.id).order('date', { ascending: false }),
+        supabase.from('wallets').select('*').eq('tenant_id', currentTenant.id),
+        supabase.from('categories').select('*').eq('tenant_id', currentTenant.id),
+        supabase.from('savings_goals').select('*').eq('tenant_id', currentTenant.id),
+        supabase.from('savings_contributions').select('*').eq('tenant_id', currentTenant.id).order('date', { ascending: false }),
+        supabase.from('visibility_rules').select('*').eq('tenant_id', currentTenant.id),
+        supabase.from('users').select('*').eq('tenant_id', currentTenant.id),
+        supabase.from('audit_logs').select('*').eq('tenant_id', currentTenant.id).order('created_at', { ascending: false }).limit(50),
+      ]);
+
+      if (txData !== null && txData !== undefined) setRawTransactions(txData);
+      if (walletData !== null && walletData !== undefined) setRawWallets(walletData);
+      if (catData !== null && catData !== undefined) setRawCategories(catData);
+      if (savData !== null && savData !== undefined) setRawSavingsGoals(savData);
+      if (contribData !== null && contribData !== undefined) setRawContributions(contribData);
+      if (rulesData !== null && rulesData !== undefined) setRawVisibilityRules(rulesData);
+      if (usersData !== null && usersData !== undefined && usersData.length > 0) setAllUsers(usersData);
+      if (logsData !== null && logsData !== undefined) setRawAuditLogs(logsData);
+
       setSyncStatus('synced');
       setLastSyncTime(new Date());
     } catch (err) {
-      console.warn('Supabase fetch failed, fallback to local state:', err);
+      console.warn('Supabase fetch failed:', err);
       setIsLiveDbConnected(false);
+      setIsDbSetupRequired(true);
       setSyncStatus('offline');
     }
   }, [currentTenant.id]);
@@ -1026,6 +986,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setTheme,
         toggleTheme,
         isLiveDbConnected,
+        isDbSetupRequired,
+        setIsDbSetupRequired,
         syncStatus,
         lastSyncTime,
         refreshData,
