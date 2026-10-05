@@ -132,12 +132,36 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 10. TELEGRAM INTEGRATION & PAIRINGS TABLE
+CREATE TABLE IF NOT EXISTS telegram_bindings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    telegram_user_id VARCHAR(100) UNIQUE NOT NULL,
+    telegram_username VARCHAR(100),
+    telegram_chat_id VARCHAR(100) NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    default_wallet_id UUID REFERENCES wallets(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. TELEGRAM PAIRING CODES (TEMPORARY OTP)
+CREATE TABLE IF NOT EXISTS telegram_pairing_codes (
+    code VARCHAR(10) PRIMARY KEY,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- INDEXES FOR FAST QUERYING
 CREATE INDEX IF NOT EXISTS idx_transactions_tenant_date ON transactions(tenant_id, date DESC);
 CREATE INDEX IF NOT EXISTS idx_transactions_wallet ON transactions(wallet_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id);
 CREATE INDEX IF NOT EXISTS idx_savings_tenant ON savings_goals(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_tenant ON audit_logs(tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telegram_bindings_user ON telegram_bindings(user_id);
+CREATE INDEX IF NOT EXISTS idx_telegram_bindings_tg_user ON telegram_bindings(telegram_user_id);
 
 -- ENABLE ROW LEVEL SECURITY (RLS)
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
@@ -149,6 +173,8 @@ ALTER TABLE savings_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE savings_contributions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE visibility_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE telegram_bindings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE telegram_pairing_codes ENABLE ROW LEVEL SECURITY;
 
 -- SAMPLE SEED DATA INSERTION (FOR INITIAL SETUP)
 INSERT INTO tenants (id, name, type, currency) VALUES

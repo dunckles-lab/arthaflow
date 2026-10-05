@@ -15,6 +15,7 @@ import {
   Tag,
   Sun,
   Moon,
+  Send,
 } from 'lucide-react';
 import { CustomSelect } from './CustomSelect';
 
@@ -27,6 +28,7 @@ interface MenuSheetProps {
   onOpenAudit: () => void;
   onOpenDb: () => void;
   onOpenCategories: () => void;
+  onOpenTelegram: () => void;
 }
 
 export const MenuSheet: React.FC<MenuSheetProps> = ({
@@ -38,6 +40,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
   onOpenAudit,
   onOpenDb,
   onOpenCategories,
+  onOpenTelegram,
 }) => {
   const {
     currentUser,
@@ -143,6 +146,23 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
 
         {/* Quick Menu List */}
         <div className="mt-4 space-y-2">
+          {/* Integrasi Telegram Bot */}
+          <button
+            onClick={() => {
+              onClose();
+              onOpenTelegram();
+            }}
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-xs font-semibold text-sky-400 transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <Send className="w-4 h-4 text-sky-400" />
+              <span>Integrasi Bot Telegram</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-mono">
+              Gateway
+            </span>
+          </button>
+
           {/* Kelola Kategori */}
           <button
             onClick={() => {

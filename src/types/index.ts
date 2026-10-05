@@ -127,3 +127,22 @@ export interface PeriodFilterState {
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
 }
+
+export interface TelegramBinding {
+  id: string;
+  telegram_user_id: string;
+  telegram_username?: string;
+  telegram_chat_id: string;
+  user_id: string;
+  tenant_id: string;
+  default_wallet_id?: string;
+  created_at: string;
+}
+
+export interface TelegramPairingCode {
+  code: string;
+  user_id: string;
+  tenant_id: string;
+  expires_at: number; // timestamp ms
+}
+

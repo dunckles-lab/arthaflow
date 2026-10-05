@@ -14,6 +14,7 @@ import {
   Tag,
   Sun,
   Moon,
+  Send,
 } from 'lucide-react';
 import { TransactionModal } from './TransactionModal';
 import { VisibilityConfigModal } from './VisibilityConfigModal';
@@ -22,6 +23,7 @@ import { AuditLogModal } from './AuditLogModal';
 import { ExportModal } from './ExportModal';
 import { DatabaseConfigModal } from './DatabaseConfigModal';
 import { CategoryManagementModal } from './CategoryManagementModal';
+import { TelegramIntegrationModal } from './TelegramIntegrationModal';
 import { MenuSheet } from './MenuSheet';
 import { CustomSelect } from './CustomSelect';
 
@@ -45,6 +47,7 @@ export const Navbar: React.FC = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
+  const [isTelegramModalOpen, setIsTelegramModalOpen] = useState(false);
   const [isMenuSheetOpen, setIsMenuSheetOpen] = useState(false);
 
   const isSuperadmin = currentUser.role === 'superadmin';
@@ -117,6 +120,16 @@ export const Navbar: React.FC = () => {
                 }`}
               />
               <span>{isLiveDbConnected ? 'Live DB' : 'Supabase Setup'}</span>
+            </button>
+
+            {/* Telegram Bot Button */}
+            <button
+              onClick={() => setIsTelegramModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-xs font-semibold text-sky-400 transition-colors cursor-pointer"
+              title="Integrasi Telegram Bot"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Bot Tele</span>
             </button>
 
             {/* Category Management Button */}
@@ -240,6 +253,10 @@ export const Navbar: React.FC = () => {
       {/* Render Modals */}
       <TransactionModal isOpen={isTxModalOpen} onClose={() => setIsTxModalOpen(false)} />
       <CategoryManagementModal isOpen={isCatModalOpen} onClose={() => setIsCatModalOpen(false)} />
+      <TelegramIntegrationModal
+        isOpen={isTelegramModalOpen}
+        onClose={() => setIsTelegramModalOpen(false)}
+      />
       <VisibilityConfigModal isOpen={isVisModalOpen} onClose={() => setIsVisModalOpen(false)} />
       <UserManagementModal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} />
       <AuditLogModal isOpen={isAuditModalOpen} onClose={() => setIsAuditModalOpen(false)} />
@@ -256,6 +273,7 @@ export const Navbar: React.FC = () => {
         onOpenAudit={() => setIsAuditModalOpen(true)}
         onOpenDb={() => setIsDbModalOpen(true)}
         onOpenCategories={() => setIsCatModalOpen(true)}
+        onOpenTelegram={() => setIsTelegramModalOpen(true)}
       />
     </>
   );
