@@ -67,12 +67,6 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
     badge: t.type === 'household' ? 'Rumah Tangga' : t.type === 'personal' ? 'Pribadi' : 'Organisasi',
   }));
 
-  const userOptions = allUsers.map((u) => ({
-    value: u.id,
-    label: u.name,
-    badge: u.role.toUpperCase(),
-  }));
-
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div
@@ -265,22 +259,6 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
               <span className="text-[10px] text-amber-400">Superadmin</span>
             </button>
           )}
-        </div>
-
-        {/* Demo Switch Role */}
-        <div className="mt-4 p-3 rounded-2xl bg-[#0a0b10] border border-[#1e2436]">
-          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5 mb-2">
-            <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-            Simulasi Ganti Peran (Dev/Demo)
-          </label>
-          <CustomSelect
-            value={currentUser.id}
-            onChange={(val) => {
-              const selected = allUsers.find((u) => u.id === val);
-              if (selected) setCurrentUser(selected);
-            }}
-            options={userOptions}
-          />
         </div>
 
         {/* Logout Button */}

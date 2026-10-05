@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useFinance } from '@/lib/store';
-import { ShieldCheck, Lock, ArrowRight, Sparkles, Database, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Lock, Database } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { loginWithGoogle, bypassAuthForDemo } = useFinance();
+  const { loginWithGoogle } = useFinance();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -104,17 +104,6 @@ export const LoginPage: React.FC = () => {
               <Database className="w-4 h-4 text-cyan-400 shrink-0" />
               <span>Sinkronisasi Real-Time & Riwayat Audit Log</span>
             </div>
-          </div>
-
-          {/* Sandbox / Demo Mode Option */}
-          <div className="mt-6 pt-4 border-t border-[#1e2436]/60 text-center">
-            <button
-              onClick={bypassAuthForDemo}
-              className="text-xs text-slate-400 hover:text-emerald-400 font-medium transition-colors flex items-center justify-center gap-1.5 mx-auto"
-            >
-              <span>Eksplorasi Mode Sandbox / Tamu</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
           </div>
         </div>
 
