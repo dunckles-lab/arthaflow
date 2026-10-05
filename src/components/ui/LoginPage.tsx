@@ -5,18 +5,21 @@ import { useFinance } from '@/lib/store';
 import { ShieldCheck, Lock, Database } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { loginWithGoogle } = useFinance();
+  const { loginWithGoogle, authError, clearAuthError } = useFinance();
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const activeError = authError || localError;
 
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      setErrorMsg(null);
+      setLocalError(null);
+      clearAuthError();
       await loginWithGoogle();
     } catch (err: any) {
       console.error('Google SSO Error:', err);
-      setErrorMsg(err.message || 'Gagal menghubungkan ke Google SSO. Periksa koneksi atau konfigurasi Supabase.');
+      setLocalError(err.message || 'Gagal menghubungkan ke Google SSO. Periksa koneksi atau konfigurasi Supabase.');
       setIsLoading(false);
     }
   };
@@ -53,9 +56,10 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
 
-          {errorMsg && (
-            <div className="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-300">
-              {errorMsg}
+          {activeError && (
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
+              <div className="w-2 h-2 rounded-full bg-rose-500 mt-1 shrink-0" />
+              <div className="flex-1 font-medium leading-relaxed">{activeError}</div>
             </div>
           )}
 

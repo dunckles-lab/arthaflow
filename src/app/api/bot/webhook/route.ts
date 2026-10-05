@@ -206,17 +206,12 @@ async function handlePairing(
       }
     }
 
-    // 3. Fallback for initial demo setup if code matches AF-XXXXXX
-    if (!targetUserId && (code.toUpperCase().startsWith('AF-') || code.length === 6 || code.length === 9)) {
-      targetUserId = '00000000-0000-0000-0000-000000000001';
-      targetTenantId = '11111111-1111-1111-1111-111111111111';
-    }
-
+    // 3. Fallback check: do not assign dummy IDs
     if (!targetUserId) {
       await sendTelegramMessage(
         chatId,
         `❌ <b>Kode pairing tidak valid atau telah kedaluwarsa.</b>\n\n` +
-        `Silakan ambil kode pairing baru di dashboard Web ArthaFlow.`
+        `Silakan generate kode pairing baru melalui dashboard Web ArthaFlow (Menu Integrasi Bot Telegram).`
       );
       return;
     }
@@ -248,7 +243,7 @@ async function handlePairing(
       `🎉 <b>Akun Berhasil Terhubung!</b>\n\n` +
       `Akun Telegram Anda (@${telegramUsername}) kini terhubung ke ruang buku ArthaFlow Anda secara aman & terisolasi.\n\n` +
       `Sekarang Anda dapat langsung mencatat transaksi:\n` +
-      `• <code>keluar 35rb sarapan pagi</code>\n` +
+      `• <code>keluar 35rb sarapan pagi bca</code>\n` +
       `• <code>masuk 1.5jt freelance bca</code>\n` +
       `• <code>tf 50k bca ke gopay</code>\n` +
       `• <code>/saldo</code> untuk cek saldo rekening Anda\n` +
@@ -273,7 +268,7 @@ async function getBinding(telegramUserId: string, supabase: any) {
 
     if (!error && data) return data;
   } catch (e) {
-    // Supabase table not created yet
+    console.warn('Supabase telegram_bindings lookup error:', e);
   }
 
   // Check in-memory bindings
@@ -281,12 +276,7 @@ async function getBinding(telegramUserId: string, supabase: any) {
     return activeBindings.get(telegramUserId);
   }
 
-  // Default initial binding for superadmin demo
-  return {
-    telegram_user_id: telegramUserId,
-    user_id: '00000000-0000-0000-0000-000000000001',
-    tenant_id: '11111111-1111-1111-1111-111111111111',
-  };
+  return null;
 }
 
 /**
@@ -294,37 +284,57 @@ async function getBinding(telegramUserId: string, supabase: any) {
  */
 async function handleSaldo(chatId: number | string, binding: any, supabase: any) {
   try {
-    const { data: wallets, error } = await supabase
+    const { data: wallets, error: wError } = await supabase
       .from('wallets')
       .select('*')
       .eq('tenant_id', binding.tenant_id)
       .eq('is_active', true);
 
-    if (error || !wallets || wallets.length === 0) {
+    const { data: savings, error: sError } = await supabase
+      .from('savings_goals')
+      .select('*')
+      .eq('tenant_id', binding.tenant_id);
+
+    if (wError) {
+      console.warn('Supabase fetch wallets error in handleSaldo:', wError);
+    }
+
+    if (!wallets || wallets.length === 0) {
       await sendTelegramMessage(
         chatId,
-        `💳 <b>Ringkasan Saldo Rekening</b>\n\n` +
-        `• <b>Bank BCA:</b> Rp 25.500.000\n` +
-        `• <b>Bank Mandiri:</b> Rp 12.000.000\n` +
-        `• <b>Kas Tunai:</b> Rp 1.750.000\n` +
-        `• <b>GoPay:</b> Rp 620.000\n\n` +
-        `💰 <b>Total Kekayaan:</b> Rp 39.870.000`
+        `💳 <b>Ringkasan Saldo Rekening & Tabungan</b>\n\n` +
+        `⚠️ <i>Belum ada rekening atau dompet yang terdaftar di ruang buku Anda.</i>\n\n` +
+        `Silakan tambahkan rekening baru terlebih dahulu melalui dashboard web ArthaFlow.`
       );
       return;
     }
 
-    let total = 0;
-    let listText = '';
+    let totalWallets = 0;
+    let walletListText = '';
 
     for (const w of wallets) {
-      total += Number(w.balance || 0);
-      listText += `• <b>${w.name}</b>: Rp ${Number(w.balance || 0).toLocaleString('id-ID')}\n`;
+      const bal = Number(w.balance || 0);
+      totalWallets += bal;
+      walletListText += `• <b>${w.name}</b>: Rp ${bal.toLocaleString('id-ID')}\n`;
     }
 
-    const msg =
-      `💳 <b>Ringkasan Saldo Rekening & Dompet</b>\n\n` +
-      `${listText}\n` +
-      `💰 <b>Total Kekayaan Bersih:</b> Rp ${total.toLocaleString('id-ID')}`;
+    let totalSavings = 0;
+    let savingsListText = '';
+    if (savings && savings.length > 0) {
+      for (const s of savings) {
+        const amt = Number(s.current_amount || 0);
+        totalSavings += amt;
+        savingsListText += `• 🎯 <b>${s.name}</b>: Rp ${amt.toLocaleString('id-ID')} / Rp ${Number(s.target_amount || 0).toLocaleString('id-ID')}\n`;
+      }
+    }
+
+    let msg = `💳 <b>Ringkasan Saldo Rekening & Dompet</b>\n\n${walletListText}\n💰 <b>Total Saldo Kas/Bank:</b> Rp ${totalWallets.toLocaleString('id-ID')}`;
+
+    if (savingsListText) {
+      msg += `\n\n🏦 <b>Alokasi Target Tabungan:</b>\n${savingsListText}\n💎 <b>Total Tabungan:</b> Rp ${totalSavings.toLocaleString('id-ID')}`;
+    }
+
+    msg += `\n\n📈 <b>Total Kekayaan Bersih:</b> Rp ${(totalWallets + totalSavings).toLocaleString('id-ID')}`;
 
     await sendTelegramMessage(chatId, msg);
   } catch (err: any) {
@@ -354,7 +364,7 @@ async function handleRekap(chatId: number | string, binding: any, supabase: any)
         `• Pemasukan: 🟢 Rp 0\n` +
         `• Pengeluaran: 🔴 Rp 0\n` +
         `• Net Hari Ini: <b>Rp 0</b>\n\n` +
-        `📆 <b>Bulan Ini:</b>\n` +
+        `📆 <b>Bulan Ini (${todayStr.substring(0, 7)}):</b>\n` +
         `• Total Masuk: 🟢 Rp 0\n` +
         `• Total Keluar: 🔴 Rp 0\n` +
         `• Net Bulan Ini: <b>Rp 0</b>`
@@ -417,12 +427,16 @@ async function executeBotTransaction(
       .select('*')
       .eq('tenant_id', binding.tenant_id);
 
-    const walletList = wallets && wallets.length > 0 ? wallets : [
-      { id: '11111111-1111-1111-1111-111111111101', name: 'Bank BCA', balance: 25500000 },
-      { id: '11111111-1111-1111-1111-111111111102', name: 'Bank Mandiri', balance: 12000000 },
-      { id: '11111111-1111-1111-1111-111111111103', name: 'Kas Tunai', balance: 1750000 },
-      { id: '11111111-1111-1111-1111-111111111104', name: 'GoPay', balance: 620000 },
-    ];
+    if (!wallets || wallets.length === 0) {
+      await sendTelegramMessage(
+        chatId,
+        `⚠️ <b>Tidak dapat mencatat transaksi:</b>\n\n` +
+        `Belum ada rekening / dompet aktif di ruang buku ArthaFlow Anda. Silakan tambahkan rekening bank atau dompet terlebih dahulu di web dashboard.`
+      );
+      return;
+    }
+
+    const walletList = wallets;
 
     // 2. Resolve source wallet
     let wallet = walletList[0];
@@ -443,20 +457,21 @@ async function executeBotTransaction(
         );
       }
       if (!targetWallet) {
-        targetWallet = walletList.find((w: any) => w.id !== wallet.id) || walletList[0];
+        targetWallet = walletList.find((w: any) => w.id !== wallet.id) || null;
+      }
+      if (!targetWallet) {
+        await sendTelegramMessage(
+          chatId,
+          `⚠️ <b>Transfer gagal:</b> Anda membutuhkan minimal 2 rekening terdaftar untuk melakukan transfer antar rekening.`
+        );
+        return;
       }
     }
 
     // 4. Resolve category
-    const catList = categories && categories.length > 0 ? categories : [
-      { id: '22222222-2222-2222-2222-222222222201', name: 'Makanan & Minuman', type: 'expense' },
-      { id: '22222222-2222-2222-2222-222222222202', name: 'Transportasi', type: 'expense' },
-      { id: '22222222-2222-2222-2222-222222222203', name: 'Gaji & Upah', type: 'income' },
-      { id: '22222222-2222-2222-2222-222222222204', name: 'Lain-lain', type: 'expense' },
-    ];
-
+    const catList = categories || [];
     let category = null;
-    if (parsed.type !== 'transfer') {
+    if (parsed.type !== 'transfer' && catList.length > 0) {
       const typeCategories = catList.filter((c: any) => c.type === parsed.type);
       const match = typeCategories.find((c: any) =>
         parsed.notes.toLowerCase().includes(c.name.toLowerCase())
@@ -470,6 +485,7 @@ async function executeBotTransaction(
     // 5. Insert transaction into Supabase
     try {
       await supabase.from('transactions').insert({
+        id: generatedTxId,
         tenant_id: binding.tenant_id,
         user_id: binding.user_id,
         user_name: `@${telegramUsername} (Bot)`,
@@ -482,11 +498,11 @@ async function executeBotTransaction(
         notes: parsed.notes,
       });
 
-      // 6. Update wallet balances
+      // 6. Update wallet balances in Supabase
       if (parsed.type === 'expense') {
         await supabase
           .from('wallets')
-          .update({ balance: Number(wallet.balance) - parsed.amount })
+          .update({ balance: Math.max(0, Number(wallet.balance) - parsed.amount) })
           .eq('id', wallet.id);
       } else if (parsed.type === 'income') {
         await supabase
@@ -496,7 +512,7 @@ async function executeBotTransaction(
       } else if (parsed.type === 'transfer' && targetWallet) {
         await supabase
           .from('wallets')
-          .update({ balance: Number(wallet.balance) - parsed.amount })
+          .update({ balance: Math.max(0, Number(wallet.balance) - parsed.amount) })
           .eq('id', wallet.id);
         await supabase
           .from('wallets')
@@ -504,7 +520,7 @@ async function executeBotTransaction(
           .eq('id', targetWallet.id);
       }
     } catch (dbErr) {
-      console.warn('Database write skipped (fallback mode):', dbErr);
+      console.warn('Database write error:', dbErr);
     }
 
     // 7. Calculate new balance to show

@@ -42,6 +42,8 @@ interface FinanceContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   authEmail: string | null;
+  authError: string | null;
+  clearAuthError: () => void;
   isAuthenticated: boolean;
   isAuthChecking: boolean;
 
@@ -101,9 +103,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [allUsers, setAllUsers] = useState<User[]>(initialUsers);
   const [currentUser, setCurrentUserState] = useState<User>(initialUsers[0]);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
   const [theme, setThemeState] = useState<'dark' | 'light'>('dark');
+
+  const clearAuthError = () => setAuthError(null);
 
   // Load theme preference on mount
   useEffect(() => {
@@ -167,10 +172,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     // Check active session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        handleAuthUser(session.user);
-        setIsAuthenticated(true);
+        await handleAuthUser(session.user);
       } else {
         setIsAuthenticated(false);
       }
@@ -181,10 +185,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        handleAuthUser(session.user);
-        setIsAuthenticated(true);
+        await handleAuthUser(session.user);
       } else {
         setAuthEmail(null);
         setIsAuthenticated(false);
@@ -197,50 +200,108 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
   }, []);
 
-  const handleAuthUser = (authUser: any) => {
-    const email = authUser.email || '';
-    setAuthEmail(email);
-    setIsAuthenticated(true);
+  const handleAuthUser = async (authUser: any) => {
+    const email = (authUser.email || '').trim().toLowerCase();
     const fullName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0];
     const avatar = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
 
-    // If it is dunckles123@gmail.com, automatically promote to Superadmin
-    const isOwner = email.toLowerCase() === 'dunckles123@gmail.com';
+    const isOwner = email === 'dunckles123@gmail.com';
+    const supabase = getSupabase();
+    let matchedUser: User | null = null;
 
-    setAllUsers((prevUsers) => {
-      const existingUser = prevUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (existingUser) {
-        const updated = {
-          ...existingUser,
-          role: isOwner ? ('superadmin' as UserRole) : existingUser.role,
-          name: fullName || existingUser.name,
-          avatar_url: avatar || existingUser.avatar_url,
-        };
-        setCurrentUserState(updated);
-        return prevUsers.map((u) => (u.id === existingUser.id ? updated : u));
-      } else {
-        const newUser: User = {
-          id: authUser.id || 'u-' + Date.now(),
-          email,
-          name: isOwner ? `${fullName} (Superadmin)` : fullName,
-          role: isOwner ? 'superadmin' : 'user',
-          tenant_id: currentTenant.id,
-          avatar_url: avatar,
-          created_at: new Date().toISOString(),
-        };
-        setCurrentUserState(newUser);
-        return [...prevUsers, newUser];
+    if (supabase && isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .ilike('email', email)
+          .maybeSingle();
+
+        if (!error && data) {
+          matchedUser = data;
+        }
+      } catch (err) {
+        console.warn('Supabase user lookup error:', err);
       }
+    }
+
+    // Check pre-registered initial users
+    if (!matchedUser) {
+      const localMatch = initialUsers.find((u) => u.email.toLowerCase() === email);
+      if (localMatch) {
+        matchedUser = localMatch;
+      }
+    }
+
+    // Superadmin owner bootstrap if DB has not yet inserted the owner record
+    if (!matchedUser && isOwner) {
+      matchedUser = {
+        id: authUser.id || '00000000-0000-0000-0000-000000000001',
+        email,
+        name: `${fullName} (Superadmin)`,
+        role: 'superadmin',
+        tenant_id: '11111111-1111-1111-1111-111111111111',
+        avatar_url: avatar,
+        created_at: new Date().toISOString(),
+      };
+      if (supabase && isSupabaseConfigured()) {
+        try {
+          await supabase.from('users').upsert([matchedUser]);
+        } catch (e) {
+          console.warn('Upsert owner record error:', e);
+        }
+      }
+    }
+
+    // STRICT SECURITY GATE: If email is not registered in database, REJECT IMMEDIATELY
+    if (!matchedUser) {
+      console.warn(`SECURITY: Unauthorized login attempt blocked for unregistered email: ${email}`);
+      await signOutSupabase();
+      setAuthEmail(null);
+      setIsAuthenticated(false);
+      setAuthError(`Akses Ditolak: Email "${email}" belum terdaftar di sistem ArthaFlow. Hubungi Administrator untuk mendaftarkan akun Anda.`);
+      return;
+    }
+
+    // User is authorized
+    setAuthError(null);
+    setAuthEmail(email);
+    setIsAuthenticated(true);
+
+    const updatedUser: User = {
+      ...matchedUser,
+      name: fullName || matchedUser.name,
+      avatar_url: avatar || matchedUser.avatar_url,
+      role: isOwner ? ('superadmin' as UserRole) : matchedUser.role,
+    };
+
+    setCurrentUserState(updatedUser);
+    setAllUsers((prev) => {
+      const exists = prev.some((u) => u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase());
+      if (exists) {
+        return prev.map((u) => (u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase() ? updatedUser : u));
+      }
+      return [...prev, updatedUser];
     });
+
+    // Automatically align tenant with the user's assigned tenant
+    if (updatedUser.tenant_id) {
+      const targetTenant = tenants.find((t) => t.id === updatedUser.tenant_id);
+      if (targetTenant) {
+        setCurrentTenant(targetTenant);
+      }
+    }
   };
 
   const loginWithGoogle = async () => {
+    setAuthError(null);
     await signInWithGoogle();
   };
 
   const logout = async () => {
     await signOutSupabase();
     setAuthEmail(null);
+    setAuthError(null);
     setIsAuthenticated(false);
     setCurrentUserState(initialUsers[0]);
   };
@@ -1042,6 +1103,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         loginWithGoogle,
         logout,
         authEmail,
+        authError,
+        clearAuthError,
         isAuthenticated,
         isAuthChecking,
         wallets: visibleWallets,
