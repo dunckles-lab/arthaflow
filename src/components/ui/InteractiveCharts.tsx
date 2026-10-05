@@ -78,8 +78,8 @@ export const InteractiveCharts: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#0a0b10] border border-[#1e2436] p-3 rounded-lg shadow-xl text-xs">
-          <p className="text-slate-300 font-semibold mb-1">{label}</p>
+        <div className="bg-white dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] p-3 rounded-lg shadow-xl text-xs">
+          <p className="text-slate-700 dark:text-slate-300 font-semibold mb-1">{label}</p>
           {payload.map((item: any, idx: number) => (
             <p key={idx} style={{ color: item.color }} className="font-medium">
               {item.name}: {formatCurrency(item.value)}
@@ -94,20 +94,20 @@ export const InteractiveCharts: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       {/* 1. Trend Area Chart */}
-      <div className="lg:col-span-2 bg-[#12141d] border border-[#1e2436] rounded-xl p-5 shadow-lg flex flex-col justify-between">
+      <div className="lg:col-span-2 bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-xl p-5 shadow-sm transition-colors flex flex-col justify-between">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h4 className="text-sm font-semibold text-slate-200">Tren Arus Kas Transaksi</h4>
-            <p className="text-xs text-slate-400">Komparasi Pemasukan vs Pengeluaran</p>
+            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Tren Arus Kas Transaksi</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Komparasi Pemasukan vs Pengeluaran</p>
           </div>
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <span className="text-slate-400">Pemasukan</span>
+              <span className="text-slate-500 dark:text-slate-400">Pemasukan</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-              <span className="text-slate-400">Pengeluaran</span>
+              <span className="text-slate-500 dark:text-slate-400">Pengeluaran</span>
             </div>
           </div>
         </div>
@@ -163,10 +163,10 @@ export const InteractiveCharts: React.FC = () => {
       </div>
 
       {/* 2. Donut Chart - Proporsi Pengeluaran */}
-      <div className="bg-[#12141d] border border-[#1e2436] rounded-xl p-5 shadow-lg flex flex-col justify-between">
+      <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-xl p-5 shadow-sm transition-colors flex flex-col justify-between">
         <div className="mb-2">
-          <h4 className="text-sm font-semibold text-slate-200">Distribusi Pengeluaran</h4>
-          <p className="text-xs text-slate-400">Berdasarkan kategori pengeluaran</p>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Distribusi Pengeluaran</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Berdasarkan kategori pengeluaran</p>
         </div>
 
         <div className="h-[200px] w-full flex items-center justify-center">

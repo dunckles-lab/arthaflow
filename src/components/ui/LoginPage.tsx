@@ -22,7 +22,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#0a0b10] flex flex-col justify-center items-center px-4 py-8 selection:bg-emerald-500/20 selection:text-emerald-300 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-slate-50 dark:bg-[#0a0b10] flex flex-col justify-center items-center px-4 py-8 selection:bg-emerald-500/20 selection:text-emerald-300 relative overflow-hidden transition-colors">
       {/* Subtle Background Glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[400px] h-[250px] bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
@@ -33,28 +33,28 @@ export const LoginPage: React.FC = () => {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-600 text-slate-950 font-black text-2xl shadow-xl shadow-emerald-500/20 mb-4">
             A
           </div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center justify-center gap-2">
             ArthaFlow
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
               v1.0
             </span>
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Financial Management & Multi-Scope RBAC Operating System
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/60">
+        <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-6 sm:p-8 shadow-2xl shadow-slate-200/50 dark:shadow-black/60 transition-colors">
           <div className="text-center mb-6">
-            <h2 className="text-base font-semibold text-slate-100">Selamat Datang</h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Selamat Datang</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               Silakan masuk untuk mengakses pencatatan keuangan, rekening, dan alokasi tabungan Anda.
             </p>
           </div>
 
           {errorMsg && (
-            <div className="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300">
+            <div className="mb-5 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-300">
               {errorMsg}
             </div>
           )}
@@ -63,10 +63,10 @@ export const LoginPage: React.FC = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={isLoading}
-            className="w-full py-3 px-4 rounded-xl bg-slate-100 hover:bg-white active:bg-slate-200 text-slate-950 font-bold text-sm flex items-center justify-center gap-3 transition-all duration-150 shadow-lg shadow-white/5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-white dark:text-slate-950 font-bold text-sm flex items-center justify-center gap-3 transition-all duration-150 shadow-lg shadow-black/5 dark:shadow-white/5 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -91,17 +91,17 @@ export const LoginPage: React.FC = () => {
           </button>
 
           {/* Security Features */}
-          <div className="mt-6 pt-6 border-t border-[#1e2436] space-y-2.5">
-            <div className="flex items-center gap-2 text-xs text-slate-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-[#1e2436] space-y-2.5">
+            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Autentikasi Aman & Terenkripsi Supabase</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-300">
-              <Lock className="w-4 h-4 text-indigo-400 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <span>Isolasi Multi-Tenant & Row Level Security (RLS)</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-300">
-              <Database className="w-4 h-4 text-cyan-400 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <Database className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
               <span>Sinkronisasi Real-Time & Riwayat Audit Log</span>
             </div>
           </div>

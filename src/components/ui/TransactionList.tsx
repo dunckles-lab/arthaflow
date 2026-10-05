@@ -78,12 +78,12 @@ export const TransactionList: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3.5 sm:p-5 shadow-lg">
+    <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-3.5 sm:p-5 shadow-sm transition-colors">
       {/* Header & Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-sm font-semibold text-slate-200">Riwayat Mutasi Transaksi</h3>
-          <p className="text-[11px] sm:text-xs text-slate-400">
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-200">Riwayat Mutasi Transaksi</h3>
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
             {displayedTransactions.length} transaksi tercatat pada periode ini
           </p>
         </div>
@@ -91,13 +91,13 @@ export const TransactionList: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {/* Search bar */}
           <div className="relative flex-1 sm:w-48">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             <input
               type="text"
               placeholder="Cari catatan / kategori..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-[#0a0b10] border border-[#1e2436] rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 w-full"
+              className="bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-emerald-500 w-full"
             />
           </div>
 
@@ -147,16 +147,16 @@ export const TransactionList: React.FC = () => {
             return (
               <div
                 key={tx.id}
-                className="bg-[#0a0b10] border border-[#1e2436] rounded-xl p-3 flex items-center justify-between gap-3 active:bg-[#161926] transition-colors"
+                className="bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl p-3 flex items-center justify-between gap-3 active:bg-slate-100 dark:active:bg-[#161926] transition-colors"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                       isInc
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                         : isExp
-                        ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                        : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                        : 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
                     }`}
                   >
                     {isInc ? (
@@ -168,10 +168,10 @@ export const TransactionList: React.FC = () => {
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold text-slate-200 truncate">
+                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-200 truncate">
                       {tx.notes || category?.name || 'Tanpa Catatan'}
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
                       <span>{tx.date}</span>
                       <span>•</span>
                       <span className="truncate">{wallet?.name || 'Rekening'}</span>
@@ -184,19 +184,19 @@ export const TransactionList: React.FC = () => {
                   <div>
                     <p
                       className={`text-xs font-bold font-mono ${
-                        isInc ? 'text-emerald-400' : isExp ? 'text-rose-400' : 'text-indigo-400'
+                        isInc ? 'text-emerald-600 dark:text-emerald-400' : isExp ? 'text-rose-600 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'
                       }`}
                     >
                       {isInc ? '+' : isExp ? '-' : ''}
                       {formatCurrency(tx.amount)}
                     </p>
-                    <p className="text-[9px] text-slate-500 font-mono mt-0.5">
+                    <p className="text-[9px] text-slate-400 font-mono mt-0.5">
                       {tx.user_name || 'Admin'}
                     </p>
                   </div>
                   <button
                     onClick={() => deleteTransaction(tx.id)}
-                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400"
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-500"
                     title="Hapus"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -217,7 +217,7 @@ export const TransactionList: React.FC = () => {
         {displayedTransactions.length > 0 ? (
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-[#1e2436] text-[11px] font-semibold text-slate-400">
+              <tr className="border-b border-slate-200 dark:border-[#1e2436] text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                 <th className="py-2.5 px-3">TANGGAL</th>
                 <th className="py-2.5 px-3">TIPE</th>
                 <th className="py-2.5 px-3">DESKRIPSI / KATEGORI</th>
@@ -227,48 +227,48 @@ export const TransactionList: React.FC = () => {
                 <th className="py-2.5 px-3 text-center">AKSI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1e2436] text-xs">
+            <tbody className="divide-y divide-slate-200 dark:divide-[#1e2436] text-xs">
               {displayedTransactions.map((tx) => {
                 const wallet = wallets.find((w) => w.id === tx.wallet_id);
                 const targetWallet = wallets.find((w) => w.id === tx.target_wallet_id);
                 const category = categories.find((c) => c.id === tx.category_id);
 
                 return (
-                  <tr key={tx.id} className="hover:bg-[#0a0b10]/60 transition-colors group">
-                    <td className="py-3 px-3 text-slate-400 font-mono text-[11px]">
+                  <tr key={tx.id} className="hover:bg-slate-50 dark:hover:bg-[#0a0b10]/60 transition-colors group">
+                    <td className="py-3 px-3 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
                         {tx.date}
                       </div>
                     </td>
                     <td className="py-3 px-3">{getBadge(tx.type)}</td>
                     <td className="py-3 px-3">
                       <div>
-                        <span className="font-medium text-slate-200 block">
+                        <span className="font-medium text-slate-900 dark:text-slate-200 block">
                           {tx.notes || 'Tanpa Catatan'}
                         </span>
                         {category && (
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
-                            <Tag className="w-2.5 h-2.5 text-slate-500" />
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
+                            <Tag className="w-2.5 h-2.5 text-slate-400" />
                             {category.name}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-slate-300">
+                    <td className="py-3 px-3 text-slate-700 dark:text-slate-300">
                       <div className="flex items-center gap-1.5">
-                        <WalletIcon className="w-3.5 h-3.5 text-slate-500" />
+                        <WalletIcon className="w-3.5 h-3.5 text-slate-400" />
                         <span>{wallet?.name || '-'}</span>
                         {tx.type === 'transfer' && targetWallet && (
-                          <span className="text-slate-500 text-[10px]">
+                          <span className="text-slate-400 text-[10px]">
                             &rarr; {targetWallet.name}
                           </span>
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-slate-400">
+                    <td className="py-3 px-3 text-slate-500 dark:text-slate-400">
                       <div className="flex items-center gap-1.5">
-                        <UserIcon className="w-3.5 h-3.5 text-slate-500" />
+                        <UserIcon className="w-3.5 h-3.5 text-slate-400" />
                         <span>{tx.user_name || 'Admin'}</span>
                       </div>
                     </td>
@@ -276,10 +276,10 @@ export const TransactionList: React.FC = () => {
                       <span
                         className={
                           tx.type === 'income'
-                            ? 'text-emerald-400'
+                            ? 'text-emerald-600 dark:text-emerald-400'
                             : tx.type === 'expense'
-                            ? 'text-rose-400'
-                            : 'text-indigo-400'
+                            ? 'text-rose-600 dark:text-rose-400'
+                            : 'text-indigo-600 dark:text-indigo-400'
                         }
                       >
                         {tx.type === 'income' ? '+' : tx.type === 'expense' ? '-' : ''}
@@ -289,7 +289,7 @@ export const TransactionList: React.FC = () => {
                     <td className="py-3 px-3 text-center">
                       <button
                         onClick={() => deleteTransaction(tx.id)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all cursor-pointer"
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-all cursor-pointer"
                         title="Hapus Transaksi"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

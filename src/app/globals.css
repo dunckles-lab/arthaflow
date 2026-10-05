@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #0a0b10;
   --foreground: #f8fafc;
@@ -132,8 +134,7 @@ html.light body,
 
 /* Typography Hierarchy */
 [data-theme="light"] .text-slate-100,
-[data-theme="light"] .text-slate-200,
-[data-theme="light"] .text-white {
+[data-theme="light"] .text-slate-200 {
   color: #0f172a !important;
 }
 

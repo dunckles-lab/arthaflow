@@ -133,21 +133,21 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
       <div
-        className="bg-[#12141d] border-t sm:border border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full max-w-2xl p-4 sm:p-6 shadow-2xl max-h-[92dvh] flex flex-col"
+        className="bg-white dark:bg-[#12141d] border-t sm:border border-slate-200 dark:border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full max-w-2xl p-4 sm:p-6 shadow-2xl max-h-[92dvh] flex flex-col"
         style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
-        <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
+        <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mb-3 sm:hidden" />
 
-        <div className="flex items-center justify-between pb-3 border-b border-[#1e2436]">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e2436]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-100">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
                 Hak Visibilitas Pengguna
               </h3>
-              <p className="text-[10px] sm:text-xs text-slate-400">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                 Atur modul, rekening, kategori, dan target tabungan yang dapat dilihat anggota
               </p>
             </div>
@@ -163,7 +163,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
         <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
           {/* 1. Target User Selector */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
               Pilih Anggota yang Dikonfigurasi
             </label>
             {targetableUsers.length > 0 ? (
@@ -177,7 +177,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                 }))}
               />
             ) : (
-              <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5">
+              <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5">
                 Belum ada akun bertipe User/Partner di scope ini. Tambahkan anggota terlebih dahulu.
               </p>
             )}
@@ -185,10 +185,10 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
 
           {/* 2. Feature Toggles */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-300 mb-2">Akses Modul & Fitur</h4>
+            <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Akses Modul & Fitur</h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Lihat Semua Transaksi Scope</span>
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <span className="text-xs text-slate-700 dark:text-slate-300">Lihat Semua Transaksi Scope</span>
                 <input
                   type="checkbox"
                   checked={ruleState.can_view_all_transactions}
@@ -198,12 +198,12 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                       can_view_all_transactions: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Lihat Modul Tabungan Bersama</span>
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <span className="text-xs text-slate-700 dark:text-slate-300">Lihat Modul Tabungan Bersama</span>
                 <input
                   type="checkbox"
                   checked={ruleState.can_view_savings}
@@ -213,12 +213,12 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                       can_view_savings: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Lihat Grafik & Analitik</span>
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <span className="text-xs text-slate-700 dark:text-slate-300">Lihat Grafik & Analisis</span>
                 <input
                   type="checkbox"
                   checked={ruleState.can_view_analytics}
@@ -228,12 +228,12 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                       can_view_analytics: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Ekspor Laporan (PDF / Excel)</span>
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <span className="text-xs text-slate-700 dark:text-slate-300">Ekspor Laporan (PDF / Excel)</span>
                 <input
                   type="checkbox"
                   checked={ruleState.can_export_reports}
@@ -243,12 +243,12 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                       can_export_reports: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Kelola Rekening / Dompet (CRUD)</span>
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <span className="text-xs text-slate-700 dark:text-slate-300">Kelola Rekening / Dompet (CRUD)</span>
                 <input
                   type="checkbox"
                   checked={!!ruleState.can_manage_wallets}
@@ -258,12 +258,12 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                       can_manage_wallets: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
               </label>
 
-              <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0a0b10] border border-[#1e2436] cursor-pointer hover:border-slate-700">
-                <span className="text-xs text-slate-300">Kelola Target Tabungan (CRUD &amp; Penarikan)</span>
+              <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+                <span className="text-xs text-slate-700 dark:text-slate-300">Kelola Target Tabungan (CRUD)</span>
                 <input
                   type="checkbox"
                   checked={!!ruleState.can_manage_savings}
@@ -273,7 +273,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                       can_manage_savings: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 dark:border-slate-700 text-indigo-500 focus:ring-0 w-4 h-4 cursor-pointer"
                 />
               </label>
             </div>
@@ -281,7 +281,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
 
           {/* 3. Allowed Wallets Checkbox Grid */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-300 mb-2">
+            <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
               Visibilitas Rekening / Dompet
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -292,10 +292,10 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                     type="button"
                     key={w.id}
                     onClick={() => toggleWallet(w.id)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                    className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       isChecked
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                        : 'bg-[#0a0b10] border-[#1e2436] text-slate-500 opacity-60'
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold'
+                        : 'bg-slate-50 dark:bg-[#0a0b10] border-slate-200 dark:border-[#1e2436] text-slate-500 opacity-70'
                     }`}
                   >
                     <span className="text-xs font-medium truncate">{w.name}</span>
@@ -308,7 +308,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
 
           {/* 4. Allowed Categories Checkbox Grid */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-300 mb-2">
+            <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
               Visibilitas Kategori Transaksi
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -319,10 +319,10 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                     type="button"
                     key={c.id}
                     onClick={() => toggleCategory(c.id)}
-                    className={`flex items-center justify-between p-2 rounded-xl border text-left transition-all ${
+                    className={`flex items-center justify-between p-2 rounded-xl border text-left transition-all cursor-pointer ${
                       isChecked
-                        ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300'
-                        : 'bg-[#0a0b10] border-[#1e2436] text-slate-500 opacity-60'
+                        ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-semibold'
+                        : 'bg-slate-50 dark:bg-[#0a0b10] border-slate-200 dark:border-[#1e2436] text-slate-500 opacity-70'
                     }`}
                   >
                     <span className="text-[11px] truncate font-medium">{c.name}</span>
@@ -335,8 +335,8 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
 
           {/* 5. Allowed Savings Goals Checkbox Grid */}
           <div>
-            <h4 className="text-xs font-semibold text-slate-300 mb-2 flex items-center gap-1.5">
-              <PiggyBank className="w-3.5 h-3.5 text-purple-400" />
+            <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+              <PiggyBank className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               Visibilitas Target Tabungan Khusus
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -348,10 +348,10 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
                     type="button"
                     key={sg.id}
                     onClick={() => toggleSavingsGoal(sg.id)}
-                    className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all ${
+                    className={`flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       isChecked
-                        ? 'bg-purple-500/10 border-purple-500/30 text-purple-300'
-                        : 'bg-[#0a0b10] border-[#1e2436] text-slate-500 opacity-60'
+                        ? 'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300 font-semibold'
+                        : 'bg-slate-50 dark:bg-[#0a0b10] border-slate-200 dark:border-[#1e2436] text-slate-500 opacity-70'
                     }`}
                   >
                     <div className="min-w-0">
@@ -364,7 +364,7 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
               })}
 
               {savingsGoals.length === 0 && (
-                <div className="col-span-full text-center py-3 text-slate-500 text-[11px] bg-[#0a0b10] rounded-xl border border-[#1e2436]">
+                <div className="col-span-full text-center py-3 text-slate-500 text-[11px] bg-slate-50 dark:bg-[#0a0b10] rounded-xl border border-slate-200 dark:border-[#1e2436]">
                   Belum ada target tabungan di scope ini
                 </div>
               )}
@@ -373,9 +373,9 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-[#1e2436]">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-slate-200 dark:border-[#1e2436]">
           {saveSuccess ? (
-            <span className="text-xs text-emerald-400 flex items-center gap-1 font-semibold">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">
               <Check className="w-4 h-4" /> Aturan berhasil disimpan!
             </span>
           ) : (
@@ -388,14 +388,14 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-[#1e2436]"
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1e2436] transition-colors"
             >
               Batal
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="flex-1 sm:flex-none px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20"
+              className="flex-1 sm:flex-none px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/20 active:scale-95 transition-all cursor-pointer"
             >
               Simpan Aturan
             </button>

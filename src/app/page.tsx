@@ -39,11 +39,11 @@ const DashboardContent: React.FC = () => {
   // 1. Loading state while verifying active session
   if (isAuthChecking) {
     return (
-      <div className="min-h-[100dvh] bg-[#0a0b10] flex flex-col items-center justify-center p-4">
+      <div className="min-h-[100dvh] bg-slate-50 dark:bg-[#0a0b10] flex flex-col items-center justify-center p-4">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-indigo-600 flex items-center justify-center text-slate-950 font-black text-xl animate-pulse shadow-lg shadow-emerald-500/20 mb-4">
           A
         </div>
-        <p className="text-xs text-slate-400">Memeriksa sesi autentikasi...</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">Memeriksa sesi autentikasi...</p>
       </div>
     );
   }
@@ -57,32 +57,32 @@ const DashboardContent: React.FC = () => {
   const isUserRole = currentUser.role === 'user';
 
   return (
-    <div className="min-h-screen bg-[#0a0b10] text-slate-100 flex flex-col selection:bg-emerald-500/30 pb-24 md:pb-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0b10] text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-500/30 pb-24 md:pb-6 transition-colors">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-6 space-y-3.5 sm:space-y-6">
         {/* Compact Breadcrumb / Scope Header (Clean on mobile, expanded on desktop) */}
         <div className="flex items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold uppercase tracking-wider">
+            <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold uppercase tracking-wider">
               {currentTenant.type === 'household'
                 ? 'Rumah Tangga'
                 : currentTenant.type === 'personal'
                 ? 'Pribadi'
                 : 'Organisasi'}
             </span>
-            <span className="text-xs text-slate-600">•</span>
-            <span className="text-xs text-slate-300 font-semibold truncate">
+            <span className="text-xs text-slate-400 dark:text-slate-600">•</span>
+            <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold truncate">
               {currentTenant.name}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
-              Peran: <strong className="text-emerald-400">{currentUser.role.toUpperCase()}</strong>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono hidden sm:inline">
+              Peran: <strong className="text-emerald-600 dark:text-emerald-400">{currentUser.role.toUpperCase()}</strong>
             </span>
             {isUserRole && (
-              <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-medium">
+              <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 font-medium">
                 Mode Terbatas
               </span>
             )}

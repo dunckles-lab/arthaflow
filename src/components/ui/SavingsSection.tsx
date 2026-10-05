@@ -169,20 +169,20 @@ export const SavingsSection: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-4 sm:p-5 shadow-lg">
+    <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-4 sm:p-5 shadow-sm transition-colors">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm sm:text-base font-semibold text-slate-200">
+          <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-slate-200">
             Manajemen Tabungan & Target
           </h3>
-          <p className="text-[11px] sm:text-xs text-slate-400">
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
             Rencana alokasi dana dan pencapaian target impian ({savingsGoals.length})
           </p>
         </div>
         {canManage && (
           <button
             onClick={handleOpenAdd}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
             <span>Target Baru</span>
@@ -204,15 +204,15 @@ export const SavingsSection: React.FC = () => {
           return (
             <div
               key={goal.id}
-              className="bg-[#0a0b10] border border-[#1e2436] hover:border-purple-500/40 rounded-xl p-4 flex flex-col justify-between transition-all group"
+              className="bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] hover:border-purple-500/40 rounded-xl p-4 flex flex-col justify-between transition-all group"
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
-                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium inline-block">
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-medium inline-block">
                       {goal.category || 'Tabungan'}
                     </span>
-                    <h4 className="text-sm font-bold text-slate-200 mt-1.5 truncate">{goal.name}</h4>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-200 mt-1.5 truncate">{goal.name}</h4>
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
@@ -220,14 +220,14 @@ export const SavingsSection: React.FC = () => {
                       <>
                         <button
                           onClick={() => handleOpenEdit(goal)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-[#12141d] transition-colors cursor-pointer"
+                          className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#12141d] transition-colors cursor-pointer"
                           title="Edit Target"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => setDeleteTarget(goal)}
-                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                          className="p-1 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer"
                           title="Hapus Target"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -238,7 +238,7 @@ export const SavingsSection: React.FC = () => {
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full bg-[#1e2436] rounded-full h-2.5 my-3 overflow-hidden">
+                <div className="w-full bg-slate-200 dark:bg-[#1e2436] rounded-full h-2.5 my-3 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       isDone
@@ -253,23 +253,23 @@ export const SavingsSection: React.FC = () => {
 
                 <div className="flex justify-between items-baseline mb-1">
                   <div>
-                    <span className="text-[10px] text-slate-400">Terkumpul:</span>
-                    <p className="text-sm font-bold text-slate-100 font-mono">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Terkumpul:</span>
+                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100 font-mono">
                       {formatCurrency(goal.current_amount)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400">Target:</span>
-                    <p className="text-xs font-semibold text-slate-300 font-mono">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">Target:</span>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 font-mono">
                       {formatCurrency(goal.target_amount)}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-[#1e2436]/50">
-                  <span className="text-purple-400 font-mono font-bold flex items-center gap-1">
+                <div className="flex items-center justify-between text-[11px] pt-2 border-t border-slate-200 dark:border-[#1e2436]/50">
+                  <span className="text-purple-600 dark:text-purple-400 font-mono font-bold flex items-center gap-1">
                     {percentage}%
-                    {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline" />}
+                    {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 inline" />}
                   </span>
                   <span className="text-slate-500 font-mono text-[10px]">
                     {isDone ? 'Target Tercapai!' : `Kurang ${formatCurrency(remaining)}`}
@@ -277,7 +277,7 @@ export const SavingsSection: React.FC = () => {
                 </div>
 
                 {goal.deadline && (
-                  <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-2">
+                  <div className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 mt-2">
                     <Calendar className="w-3 h-3 text-slate-400" />
                     <span>Target: {new Date(goal.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                   </div>
@@ -285,10 +285,10 @@ export const SavingsSection: React.FC = () => {
               </div>
 
               {/* Action Buttons for Deposit & Withdraw */}
-              <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-[#1e2436]">
+              <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-[#1e2436]">
                 <button
                   onClick={() => openDeposit(goal)}
-                  className="py-2 px-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                  className="py-2 px-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
                   <span>Setor</span>
@@ -296,7 +296,7 @@ export const SavingsSection: React.FC = () => {
                 <button
                   onClick={() => openWithdraw(goal)}
                   disabled={goal.current_amount <= 0}
-                  className="py-2 px-2 bg-[#12141d] hover:bg-[#1e2436] text-slate-300 border border-[#1e2436] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                  className="py-2 px-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1e2436] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                 >
                   <ArrowDownLeft className="w-3.5 h-3.5" />
                   <span>Tarik</span>
@@ -307,7 +307,7 @@ export const SavingsSection: React.FC = () => {
         })}
 
         {savingsGoals.length === 0 && (
-          <div className="col-span-full py-8 text-center bg-[#0a0b10] border border-dashed border-[#1e2436] rounded-xl text-slate-500 text-xs">
+          <div className="col-span-full py-8 text-center bg-slate-50 dark:bg-[#0a0b10] border border-dashed border-slate-200 dark:border-[#1e2436] rounded-xl text-slate-500 text-xs">
             Belum ada target tabungan yang dibuat.
           </div>
         )}
@@ -317,17 +317,17 @@ export const SavingsSection: React.FC = () => {
       {isGoalModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
-            className="bg-[#12141d] border-t sm:border border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl max-h-[92dvh] overflow-y-auto"
+            className="bg-white dark:bg-[#12141d] border-t sm:border border-slate-200 dark:border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl max-h-[92dvh] overflow-y-auto"
             style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mb-3 sm:hidden" />
 
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e2436] mb-3.5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e2436] mb-3.5">
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-100">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">
                   {editingGoal ? 'Edit Target Tabungan' : 'Buat Target Tabungan Baru'}
                 </h3>
-                <p className="text-[10px] sm:text-xs text-slate-400">
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">
                   Rencanakan tabungan dan alokasi dana masa depan
                 </p>
               </div>
@@ -341,14 +341,14 @@ export const SavingsSection: React.FC = () => {
 
             <form onSubmit={handleGoalSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Nama Target</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Target</label>
                 <input
                   type="text"
                   required
                   placeholder="Contoh: Dana Darurat 6 Bulan, DP Rumah, Liburan Jepang"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
@@ -375,7 +375,7 @@ export const SavingsSection: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Kategori</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Kategori</label>
                   <CustomSelect
                     value={category}
                     onChange={(val) => setCategory(val)}
@@ -387,12 +387,12 @@ export const SavingsSection: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">Tenggat Waktu</label>
+                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Tenggat Waktu</label>
                   <input
                     type="date"
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                    className="w-full bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
@@ -404,11 +404,11 @@ export const SavingsSection: React.FC = () => {
                 label="Warna Aksen Tabungan"
               />
 
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#1e2436]">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-[#1e2436]">
                 <button
                   type="button"
                   onClick={() => setIsGoalModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
@@ -428,19 +428,19 @@ export const SavingsSection: React.FC = () => {
       {isDepositModalOpen && selectedDepositGoal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
-            className="bg-[#12141d] border-t sm:border border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl max-h-[92dvh] overflow-y-auto"
+            className="bg-white dark:bg-[#12141d] border-t sm:border border-slate-200 dark:border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl max-h-[92dvh] overflow-y-auto"
             style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mb-3 sm:hidden" />
 
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e2436] mb-3.5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e2436] mb-3.5">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-100">Setor ke Tabungan</h3>
-                  <p className="text-[10px] sm:text-xs text-slate-400">{selectedDepositGoal.name}</p>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">Setor ke Tabungan</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">{selectedDepositGoal.name}</p>
                 </div>
               </div>
               <button
@@ -463,7 +463,7 @@ export const SavingsSection: React.FC = () => {
               />
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Ambil dari Rekening / Dompet
                 </label>
                 <CustomSelect
@@ -478,21 +478,21 @@ export const SavingsSection: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Catatan Setoran</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Catatan Setoran</label>
                 <input
                   type="text"
                   placeholder="Contoh: Sisa gaji bulanan"
                   value={depositNotes}
                   onChange={(e) => setDepositNotes(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#1e2436]">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-[#1e2436]">
                 <button
                   type="button"
                   onClick={() => setIsDepositModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
@@ -512,19 +512,19 @@ export const SavingsSection: React.FC = () => {
       {isWithdrawModalOpen && selectedWithdrawGoal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
-            className="bg-[#12141d] border-t sm:border border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl max-h-[92dvh] overflow-y-auto"
+            className="bg-white dark:bg-[#12141d] border-t sm:border border-slate-200 dark:border-[#1e2436] rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl max-h-[92dvh] overflow-y-auto"
             style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mb-3 sm:hidden" />
 
-            <div className="flex items-center justify-between pb-3 border-b border-[#1e2436] mb-3.5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-[#1e2436] mb-3.5">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/20">
                   <ArrowDownLeft className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-100">Tarik dari Tabungan</h3>
-                  <p className="text-[10px] sm:text-xs text-slate-400">{selectedWithdrawGoal.name}</p>
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">Tarik dari Tabungan</h3>
+                  <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">{selectedWithdrawGoal.name}</p>
                 </div>
               </div>
               <button
@@ -536,9 +536,9 @@ export const SavingsSection: React.FC = () => {
             </div>
 
             <form onSubmit={handleWithdrawSubmit} className="space-y-3.5">
-              <div className="p-3 bg-[#0a0b10] border border-[#1e2436] rounded-xl flex items-center justify-between">
-                <span className="text-xs text-slate-400">Saldo Tabungan Tersedia:</span>
-                <span className="text-sm font-mono font-bold text-purple-400">
+              <div className="p-3 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl flex items-center justify-between">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Saldo Tabungan Tersedia:</span>
+                <span className="text-sm font-mono font-bold text-purple-600 dark:text-purple-400">
                   {formatCurrency(selectedWithdrawGoal.current_amount)}
                 </span>
               </div>
@@ -555,7 +555,7 @@ export const SavingsSection: React.FC = () => {
               />
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Kirim ke Rekening / Dompet Tujuan
                 </label>
                 <CustomSelect
@@ -570,21 +570,21 @@ export const SavingsSection: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Alasan / Catatan Penarikan</label>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Alasan / Catatan Penarikan</label>
                 <input
                   type="text"
                   placeholder="Contoh: Kebutuhan mendesak / realisasi target"
                   value={withdrawNotes}
                   onChange={(e) => setWithdrawNotes(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-900 dark:text-slate-200 focus:outline-none focus:border-rose-500"
                 />
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-[#1e2436]">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-[#1e2436]">
                 <button
                   type="button"
                   onClick={() => setIsWithdrawModalOpen(false)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1e2436] transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
@@ -604,30 +604,30 @@ export const SavingsSection: React.FC = () => {
       {deleteTarget && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
           <div
-            className="bg-[#12141d] border-t sm:border border-rose-500/30 rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl"
+            className="bg-white dark:bg-[#12141d] border-t sm:border border-rose-500/30 rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-4 sm:p-6 shadow-2xl"
             style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <div className="w-10 h-1 rounded-full bg-slate-700 mx-auto mb-3 sm:hidden" />
+            <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700 mx-auto mb-3 sm:hidden" />
 
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+              <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/20">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-bold text-slate-100">Hapus Target Tabungan?</h3>
-                <p className="text-[10px] sm:text-xs text-slate-400">Konfirmasi tindakan penghapusan</p>
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100">Hapus Target Tabungan?</h3>
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Konfirmasi tindakan penghapusan</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 mb-4 bg-[#0a0b10] border border-[#1e2436] p-3 rounded-xl leading-relaxed">
-              Apakah Anda yakin ingin menghapus target <strong className="text-slate-100">{deleteTarget.name}</strong> dengan target <strong className="text-purple-400 font-mono">{formatCurrency(deleteTarget.target_amount)}</strong>?
+            <p className="text-xs text-slate-600 dark:text-slate-300 mb-4 bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] p-3 rounded-xl leading-relaxed">
+              Apakah Anda yakin ingin menghapus target <strong className="text-slate-900 dark:text-slate-100">{deleteTarget.name}</strong> dengan target <strong className="text-purple-600 dark:text-purple-400 font-mono">{formatCurrency(deleteTarget.target_amount)}</strong>?
             </p>
 
-            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2 border-t border-[#1e2436]">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#1e2436]">
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:bg-[#1e2436] transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#1e2436] transition-colors cursor-pointer"
               >
                 Batal
               </button>

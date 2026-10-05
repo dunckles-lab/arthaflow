@@ -78,17 +78,17 @@ export const Navbar: React.FC = () => {
               A
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-100 tracking-tight leading-none flex items-center gap-1.5">
+              <h1 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-none flex items-center gap-1.5">
                 ArthaFlow
-                <span className="hidden sm:inline text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+                <span className="hidden sm:inline text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-mono">
                   v1.0
                 </span>
               </h1>
-              <p className="text-[10px] text-slate-400 hidden sm:block">Financial Operating System</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block">Financial Operating System</p>
             </div>
 
             {/* Scope / Tenant Custom Select (Desktop) */}
-            <div className="hidden sm:block ml-2 w-56">
+            <div className="hidden sm:block ml-2 w-44 lg:w-56">
               <CustomSelect
                 value={currentTenant.id}
                 onChange={(val) => {
@@ -102,7 +102,7 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Desktop Navigation Controls */}
-          <div className="hidden md:flex items-center gap-1.5 sm:gap-2">
+          <div className="hidden md:flex items-center gap-1 lg:gap-1.5 shrink-0">
             {/* Dark / Light Mode Toggle Button */}
             <button
               type="button"
@@ -236,34 +236,34 @@ export const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile Right Controls: Theme Toggle + Quick Scope Trigger + Menu Button */}
-          <div className="flex md:hidden items-center gap-1.5">
+          <div className="flex md:hidden items-center gap-1.5 shrink-0">
             {/* Light / Dark Mode Toggle */}
             <button
               type="button"
               onClick={toggleTheme}
-              className="w-8 h-8 rounded-xl bg-[#12141d] border border-[#1e2436] flex items-center justify-center text-slate-300 active:scale-95 cursor-pointer"
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] flex items-center justify-center text-slate-700 dark:text-slate-300 active:scale-95 cursor-pointer"
               title="Ganti Tema"
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 text-amber-400" />
               ) : (
-                <Moon className="w-4 h-4 text-indigo-400" />
+                <Moon className="w-4 h-4 text-indigo-500" />
               )}
             </button>
 
             {/* Quick scope badge */}
             <button
               onClick={() => setIsMenuSheetOpen(true)}
-              className="px-2.5 py-1.5 rounded-xl bg-[#12141d] border border-[#1e2436] text-[11px] font-medium text-slate-300 flex items-center gap-1.5 max-w-[130px] truncate cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] text-[11px] font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 max-w-[130px] truncate cursor-pointer"
             >
-              <Layers className="w-3 h-3 text-indigo-400 shrink-0" />
+              <Layers className="w-3 h-3 text-indigo-500 dark:text-indigo-400 shrink-0" />
               <span className="truncate">{currentTenant.name}</span>
             </button>
 
             {/* User Profile & Menu Sheet Trigger */}
             <button
               onClick={() => setIsMenuSheetOpen(true)}
-              className="w-8 h-8 rounded-xl bg-[#12141d] border border-[#1e2436] flex items-center justify-center text-slate-300 active:scale-95 cursor-pointer"
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] flex items-center justify-center text-slate-700 dark:text-slate-300 active:scale-95 cursor-pointer"
               aria-label="Menu"
             >
               <Menu className="w-4 h-4" />

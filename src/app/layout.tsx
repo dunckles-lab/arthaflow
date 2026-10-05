@@ -54,7 +54,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
       </head>
-      <body className="bg-[#0a0b10] text-slate-100 antialiased min-h-[100dvh] pb-[env(safe-area-inset-bottom)] selection:bg-emerald-500/20 selection:text-emerald-300">
+      <body className="bg-slate-50 dark:bg-[#0a0b10] text-slate-900 dark:text-slate-100 antialiased min-h-[100dvh] pb-[env(safe-area-inset-bottom)] selection:bg-emerald-500/20 selection:text-emerald-300 transition-colors">
         {children}
         <PWARegister />
       </body>

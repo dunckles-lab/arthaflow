@@ -44,15 +44,15 @@ export const StatCards: React.FC = () => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 sm:gap-4">
       {/* 1. Total Pemasukan */}
-      <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-emerald-500/40">
+      <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-emerald-500/40 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-400">Pemasukan</span>
-          <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">Pemasukan</span>
+          <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
             <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
         <div className="mt-2">
-          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-emerald-400 tracking-tight truncate">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight truncate">
             {formatCurrency(totalIncome)}
           </h3>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
@@ -62,15 +62,15 @@ export const StatCards: React.FC = () => {
       </div>
 
       {/* 2. Total Pengeluaran */}
-      <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-rose-500/40">
+      <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-rose-500/40 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-400">Pengeluaran</span>
-          <div className="p-1.5 sm:p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">Pengeluaran</span>
+          <div className="p-1.5 sm:p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
             <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
         <div className="mt-2">
-          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-rose-400 tracking-tight truncate">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-rose-600 dark:text-rose-400 tracking-tight truncate">
             {formatCurrency(totalExpense)}
           </h3>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
@@ -80,17 +80,17 @@ export const StatCards: React.FC = () => {
       </div>
 
       {/* 3. Arus Kas Bersih */}
-      <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-indigo-500/40 col-span-2 sm:col-span-1">
+      <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-indigo-500/40 col-span-2 sm:col-span-1 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-400">Arus Kas Bersih</span>
-          <div className="p-1.5 sm:p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">Arus Kas Bersih</span>
+          <div className="p-1.5 sm:p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
             <Scale className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
         <div className="mt-2">
           <h3
             className={`text-base sm:text-lg lg:text-xl font-bold tracking-tight truncate ${
-              netCashflow >= 0 ? 'text-indigo-400' : 'text-amber-400'
+              netCashflow >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-amber-600 dark:text-amber-400'
             }`}
           >
             {formatCurrency(netCashflow)}
@@ -102,15 +102,15 @@ export const StatCards: React.FC = () => {
       </div>
 
       {/* 4. Total Saldo Dompet */}
-      <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-blue-500/40">
+      <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-blue-500/40 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-400">Saldo Rekening</span>
-          <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">Saldo Rekening</span>
+          <div className="p-1.5 sm:p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
             <WalletIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
         <div className="mt-2">
-          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-slate-100 tracking-tight truncate">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight truncate">
             {formatCurrency(totalWalletBalance)}
           </h3>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">{wallets.length} rekening</p>
@@ -118,19 +118,19 @@ export const StatCards: React.FC = () => {
       </div>
 
       {/* 5. Total Tabungan */}
-      <div className="bg-[#12141d] border border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-purple-500/40">
+      <div className="bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] rounded-2xl p-3 sm:p-4 relative overflow-hidden transition-all hover:border-purple-500/40 col-span-2 sm:col-span-2 lg:col-span-1 shadow-sm">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs font-medium text-slate-400">Tabungan</span>
-          <div className="p-1.5 sm:p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <span className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400">Tabungan Terkumpul</span>
+          <div className="p-1.5 sm:p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
             <PiggyBank className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </div>
         </div>
         <div className="mt-2">
-          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-purple-400 tracking-tight truncate">
+          <h3 className="text-base sm:text-lg lg:text-xl font-bold text-purple-600 dark:text-purple-400 tracking-tight truncate">
             {formatCurrency(totalSavingsCurrent)}
           </h3>
           <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
-            {savingsPercentage}% dari target
+            {savingsPercentage}% dari target {savingsGoals.length} tabungan
           </p>
         </div>
       </div>
