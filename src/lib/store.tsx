@@ -27,6 +27,24 @@ import {
   defaultStandardCategories,
 } from './seed-data';
 import { getSupabase, isSupabaseConfigured, signInWithGoogle, signOutSupabase } from './supabase';
+import {
+  toDbWallet,
+  fromDbWallet,
+  toDbCategory,
+  fromDbCategory,
+  toDbTransaction,
+  fromDbTransaction,
+  toDbSavingsGoal,
+  fromDbSavingsGoal,
+  toDbSavingsContribution,
+  fromDbSavingsContribution,
+  toDbVisibilityRule,
+  fromDbVisibilityRule,
+  toDbAuditLog,
+  fromDbAuditLog,
+  toDbUser,
+  fromDbUser,
+} from './supabase-mappers';
 
 interface FinanceContextType {
   // Current Scope & User
@@ -407,6 +425,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       // 2. Fetch all collections from Supabase
       const [
+        { data: tenantsData },
         { data: txData },
         { data: walletData },
         { data: catData },
@@ -416,6 +435,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         { data: usersData },
         { data: logsData }
       ] = await Promise.all([
+        supabase.from('tenants').select('*'),
         supabase.from('transactions').select('*').eq('tenant_id', currentTenant.id).order('date', { ascending: false }),
         supabase.from('wallets').select('*').eq('tenant_id', currentTenant.id),
         supabase.from('categories').select('*').eq('tenant_id', currentTenant.id),
@@ -426,14 +446,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         supabase.from('audit_logs').select('*').eq('tenant_id', currentTenant.id).order('created_at', { ascending: false }).limit(50),
       ]);
 
-      if (txData !== null && txData !== undefined) setRawTransactions(txData);
-      if (walletData !== null && walletData !== undefined) setRawWallets(walletData);
-      if (catData !== null && catData !== undefined) setRawCategories(catData);
-      if (savData !== null && savData !== undefined) setRawSavingsGoals(savData);
-      if (contribData !== null && contribData !== undefined) setRawContributions(contribData);
-      if (rulesData !== null && rulesData !== undefined) setRawVisibilityRules(rulesData);
-      if (usersData !== null && usersData !== undefined && usersData.length > 0) setAllUsers(usersData);
-      if (logsData !== null && logsData !== undefined) setRawAuditLogs(logsData);
+      if (tenantsData && tenantsData.length > 0) setTenants(tenantsData);
+      if (txData !== null && txData !== undefined) setRawTransactions(txData.map(fromDbTransaction));
+      if (walletData !== null && walletData !== undefined) setRawWallets(walletData.map(fromDbWallet));
+      if (catData !== null && catData !== undefined) setRawCategories(catData.map(fromDbCategory));
+      if (savData !== null && savData !== undefined) setRawSavingsGoals(savData.map(fromDbSavingsGoal));
+      if (contribData !== null && contribData !== undefined) setRawContributions(contribData.map(fromDbSavingsContribution));
+      if (rulesData !== null && rulesData !== undefined) setRawVisibilityRules(rulesData.map(fromDbVisibilityRule));
+      if (usersData !== null && usersData !== undefined && usersData.length > 0) setAllUsers(usersData.map(fromDbUser));
+      if (logsData !== null && logsData !== undefined) setRawAuditLogs(logsData.map(fromDbAuditLog));
 
       setSyncStatus('synced');
       setLastSyncTime(new Date());
@@ -488,6 +509,11 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       created_at: new Date().toISOString(),
     };
     setRawAuditLogs((prev) => [newLog, ...prev]);
+
+    const supabase = getSupabase();
+    if (supabase && isSupabaseConfigured()) {
+      supabase.from('audit_logs').insert([toDbAuditLog(newLog)]).then(() => {}, () => {});
+    }
   };
 
   // Helper: Get user's visibility rule
@@ -594,9 +620,23 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('transactions').insert([newTx]);
+        await supabase.from('transactions').insert([toDbTransaction(newTx)]);
+        // Also sync wallet balance in DB
+        const srcWallet = rawWallets.find((w) => w.id === txData.wallet_id);
+        if (srcWallet) {
+          let newBal = srcWallet.balance;
+          if (txData.type === 'income') newBal += txData.amount;
+          else if (txData.type === 'expense' || txData.type === 'transfer') newBal = Math.max(0, newBal - txData.amount);
+          await supabase.from('wallets').update({ balance: newBal }).eq('id', srcWallet.id);
+        }
+        if (txData.type === 'transfer' && txData.target_wallet_id) {
+          const tgtWallet = rawWallets.find((w) => w.id === txData.target_wallet_id);
+          if (tgtWallet) {
+            await supabase.from('wallets').update({ balance: tgtWallet.balance + txData.amount }).eq('id', tgtWallet.id);
+          }
+        }
       } catch (err) {
-        console.warn('Supabase insert transaction fallback:', err);
+        console.warn('Supabase insert transaction error:', err);
       }
     }
   };
@@ -630,8 +670,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (supabase && isSupabaseConfigured()) {
       try {
         await supabase.from('transactions').delete().eq('id', id);
+        const srcWallet = rawWallets.find((w) => w.id === txToDelete.wallet_id);
+        if (srcWallet) {
+          let rollbackBal = srcWallet.balance;
+          if (txToDelete.type === 'income') rollbackBal = Math.max(0, rollbackBal - txToDelete.amount);
+          else if (txToDelete.type === 'expense') rollbackBal += txToDelete.amount;
+          await supabase.from('wallets').update({ balance: rollbackBal }).eq('id', srcWallet.id);
+        }
       } catch (err) {
-        console.warn('Supabase delete transaction fallback:', err);
+        console.warn('Supabase delete transaction error:', err);
       }
     }
   };
@@ -649,7 +696,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('wallets').insert([newWallet]);
+        await supabase.from('wallets').insert([toDbWallet(newWallet)]);
       } catch (err) {
         console.warn('Supabase insert wallet error:', err);
       }
@@ -672,7 +719,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('wallets').update(updates).eq('id', id);
+        await supabase.from('wallets').update(toDbWallet(updates)).eq('id', id);
       } catch (err) {
         console.warn('Supabase update wallet error:', err);
       }
@@ -713,7 +760,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('categories').insert([newCat]);
+        await supabase.from('categories').insert([toDbCategory(newCat)]);
       } catch (err) {
         console.warn('Supabase insert category error:', err);
       }
@@ -729,7 +776,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('categories').update(updates).eq('id', id);
+        await supabase.from('categories').update(toDbCategory(updates)).eq('id', id);
       } catch (err) {
         console.warn('Supabase update category error:', err);
       }
@@ -785,7 +832,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('categories').insert(toInsert);
+        await supabase.from('categories').insert(toInsert.map(toDbCategory));
       } catch (err) {
         console.warn('Supabase generate categories error:', err);
       }
@@ -812,7 +859,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('savings_goals').insert([newGoal]);
+        await supabase.from('savings_goals').insert([toDbSavingsGoal(newGoal)]);
       } catch (err) {
         console.warn('Supabase insert savings goal error:', err);
       }
@@ -882,11 +929,11 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('savings_contributions').insert([contribution]);
+        await supabase.from('savings_contributions').insert([toDbSavingsContribution(contribution)]);
         if (updatedGoal) {
-          await supabase.from('savings_goals').update(updatedGoal).eq('id', goalId);
+          await supabase.from('savings_goals').update(toDbSavingsGoal(updatedGoal)).eq('id', goalId);
         }
-        await supabase.from('transactions').insert([tx]);
+        await supabase.from('transactions').insert([toDbTransaction(tx)]);
         const updatedWallet = rawWallets.find((w) => w.id === walletId);
         if (updatedWallet) {
           await supabase.from('wallets').update({ balance: Math.max(0, updatedWallet.balance - amount) }).eq('id', walletId);
@@ -924,7 +971,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('savings_goals').update(updates).eq('id', id);
+        await supabase.from('savings_goals').update(toDbSavingsGoal(updates)).eq('id', id);
       } catch (err) {
         console.warn('Supabase update savings error:', err);
       }
@@ -1000,7 +1047,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('transactions').insert([tx]);
+        await supabase.from('transactions').insert([toDbTransaction(tx)]);
         const updatedGoal = rawSavingsGoals.find((g) => g.id === goalId);
         if (updatedGoal) {
           const newCurrent = Math.max(0, updatedGoal.current_amount - amount);
@@ -1037,7 +1084,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('visibility_rules').upsert([rule]);
+        await supabase.from('visibility_rules').upsert([toDbVisibilityRule(rule)]);
       } catch (err) {
         console.warn('Supabase visibility rule error:', err);
       }
@@ -1076,8 +1123,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
       try {
-        await supabase.from('users').insert([newUser]);
-        await supabase.from('visibility_rules').insert([defaultRule]);
+        await supabase.from('users').insert([toDbUser(newUser)]);
+        await supabase.from('visibility_rules').insert([toDbVisibilityRule(defaultRule)]);
       } catch (err) {
         console.warn('Supabase add user error:', err);
       }
