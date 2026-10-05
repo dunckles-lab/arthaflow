@@ -517,6 +517,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteTransaction = async (id: string) => {
     const txToDelete = rawTransactions.find((t) => t.id === id);
     if (!txToDelete) return;
+    if (!isSuperadmin && txToDelete.tenant_id !== currentTenant.id) {
+      console.warn('Unauthorized: Cannot delete transaction outside your assigned scope');
+      return;
+    }
 
     // Rollback wallet balance
     setRawWallets((prev) =>
@@ -566,10 +570,17 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateWallet = async (id: string, updates: Partial<Wallet>) => {
+    const target = rawWallets.find((w) => w.id === id);
+    if (!target) return;
+    if (!isSuperadmin && target.tenant_id !== currentTenant.id) {
+      console.warn('Unauthorized: Cannot modify wallet outside your assigned scope');
+      return;
+    }
+
     setRawWallets((prev) =>
       prev.map((w) => (w.id === id ? { ...w, ...updates } : w))
     );
-    logAudit('UPDATE', 'wallet', `Memperbarui rekening ID ${id}`);
+    logAudit('UPDATE', 'wallet', `Memperbarui rekening ${target.name} (ID: ${id})`);
 
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
@@ -582,8 +593,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const deleteWallet = async (id: string) => {
+    const target = rawWallets.find((w) => w.id === id);
+    if (!target) return;
+    if (!isSuperadmin && target.tenant_id !== currentTenant.id) {
+      console.warn('Unauthorized: Cannot delete wallet outside your assigned scope');
+      return;
+    }
+
     setRawWallets((prev) => prev.filter((w) => w.id !== id));
-    logAudit('DELETE', 'wallet', `Menghapus dompet/rekening ID ${id}`);
+    logAudit('DELETE', 'wallet', `Menghapus dompet/rekening ${target.name} (ID: ${id})`);
 
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
@@ -749,6 +767,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateSavingsGoal = async (id: string, updates: Partial<SavingsGoal>) => {
+    const target = rawSavingsGoals.find((sg) => sg.id === id);
+    if (!target) return;
+    if (!isSuperadmin && target.tenant_id !== currentTenant.id) {
+      console.warn('Unauthorized: Cannot modify savings goal outside your assigned scope');
+      return;
+    }
+
     setRawSavingsGoals((prev) =>
       prev.map((sg) => {
         if (sg.id === id) {
@@ -763,7 +788,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return sg;
       })
     );
-    logAudit('UPDATE', 'savings', `Memperbarui target tabungan ID: ${id}`);
+    logAudit('UPDATE', 'savings', `Memperbarui target tabungan ${target.name} (ID: ${id})`);
 
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {
@@ -776,8 +801,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const deleteSavingsGoal = async (id: string) => {
+    const target = rawSavingsGoals.find((sg) => sg.id === id);
+    if (!target) return;
+    if (!isSuperadmin && target.tenant_id !== currentTenant.id) {
+      console.warn('Unauthorized: Cannot delete savings goal outside your assigned scope');
+      return;
+    }
+
     setRawSavingsGoals((prev) => prev.filter((sg) => sg.id !== id));
-    logAudit('DELETE', 'savings', `Menghapus target tabungan ID: ${id}`);
+    logAudit('DELETE', 'savings', `Menghapus target tabungan ${target.name} (ID: ${id})`);
 
     const supabase = getSupabase();
     if (supabase && isSupabaseConfigured()) {

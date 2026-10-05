@@ -61,11 +61,19 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
   const isSuperadmin = currentUser.role === 'superadmin';
   const isAdmin = currentUser.role === 'admin';
 
-  const tenantOptions = tenants.map((t) => ({
-    value: t.id,
-    label: t.name,
-    badge: t.type === 'household' ? 'Rumah Tangga' : t.type === 'personal' ? 'Pribadi' : 'Organisasi',
-  }));
+  const tenantOptions = tenants
+    .filter((t) => isSuperadmin || t.id === currentUser.tenant_id)
+    .map((t) => ({
+      value: t.id,
+      label: t.name,
+      badge: isSuperadmin
+        ? 'Global'
+        : t.type === 'household'
+        ? 'Keluarga'
+        : t.type === 'personal'
+        ? 'Pribadi'
+        : 'Organisasi',
+    }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
