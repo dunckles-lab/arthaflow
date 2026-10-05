@@ -19,7 +19,10 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#0a0b10',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0b10' },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -29,7 +32,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'ArthaFlow',
   },
   icons: {
@@ -44,14 +47,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${geistSans.variable} ${geistMono.variable} dark`}>
+    <html lang="id" className={`${geistSans.variable} ${geistMono.variable} dark`} data-theme="dark">
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="format-detection" content="telephone=no" />
       </head>
-      <body className="bg-[#0a0b10] text-slate-100 antialiased min-h-[100dvh] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] selection:bg-emerald-500/20 selection:text-emerald-300">
+      <body className="bg-[#0a0b10] text-slate-100 antialiased min-h-[100dvh] pb-[env(safe-area-inset-bottom)] selection:bg-emerald-500/20 selection:text-emerald-300">
         {children}
         <PWARegister />
       </body>

@@ -114,9 +114,17 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           document.documentElement.classList.add('dark');
           document.documentElement.classList.remove('light');
         }
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', savedTheme === 'light' ? '#f8fafc' : '#0a0b10');
+        }
       } else {
         document.documentElement.setAttribute('data-theme', 'dark');
         document.documentElement.classList.add('dark');
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', '#0a0b10');
+        }
       }
     } catch (e) {}
   }, []);
@@ -132,6 +140,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } else {
         document.documentElement.classList.add('dark');
         document.documentElement.classList.remove('light');
+      }
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', newTheme === 'light' ? '#f8fafc' : '#0a0b10');
       }
     } catch (e) {}
   };

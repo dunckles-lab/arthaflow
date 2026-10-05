@@ -21,7 +21,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const isAdminOrSuper = currentUser.role === 'admin' || currentUser.role === 'superadmin';
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0b10]/95 backdrop-blur-xl border-t border-[#1e2436] px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--card-bg)] border-t border-[var(--card-border)] px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl transition-colors">
       <div className="flex items-center justify-around">
         {/* Tab 1: Ringkasan */}
         <button

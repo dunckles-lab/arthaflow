@@ -4,22 +4,30 @@
   --background: #0a0b10;
   --foreground: #f8fafc;
   --card-bg: #12141d;
+  --card-subtle: #161926;
   --card-border: #1e2436;
   --input-bg: #0a0b10;
+  --input-border: #1e2436;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
+  --header-bg: #12141d;
+  --bottom-nav-bg: #12141d;
 }
 
-[data-theme="light"], html.light {
+[data-theme="light"], html.light, .light {
   --background: #f8fafc;
   --foreground: #0f172a;
   --card-bg: #ffffff;
+  --card-subtle: #f1f5f9;
   --card-border: #e2e8f0;
-  --input-bg: #f1f5f9;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --header-bg: #ffffff;
+  --bottom-nav-bg: #ffffff;
 }
 
 html {
@@ -40,7 +48,7 @@ body {
 }
 
 /* Allow text selection in inputs and content */
-input, textarea, p, span, td, th {
+input, textarea, p, span, td, th, h1, h2, h3, h4, h5, h6 {
   user-select: text;
   -webkit-user-select: text;
 }
@@ -64,107 +72,161 @@ select option {
   padding: 8px 12px;
 }
 
-/* Light mode overrides */
+/* ==========================================================================
+   LIGHT THEME COMPLETE OVERRIDES (Clean, Uniform, High-Contrast)
+   ========================================================================== */
+
+[data-theme="light"],
+html.light,
+.light {
+  color-scheme: light;
+}
+
 [data-theme="light"] body,
-html.light body {
-  background-color: #f8fafc;
-  color: #0f172a;
+html.light body,
+.light body {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-[data-theme="light"] .bg-\[\#0a0b10\],
-html.light .bg-\[\#0a0b10\] {
-  background-color: #f1f5f9 !important;
-}
-
-[data-theme="light"] .bg-\[\#12141d\],
-html.light .bg-\[\#12141d\] {
-  background-color: #ffffff !important;
-}
-
-[data-theme="light"] .bg-\[\#161926\],
-html.light .bg-\[\#161926\] {
+/* Main Backgrounds */
+[data-theme="light"] .min-h-screen,
+[data-theme="light"] .min-h-\[100dvh\],
+[data-theme="light"] [class*="bg-[#0a0b10]"] {
   background-color: #f8fafc !important;
 }
 
-[data-theme="light"] .hover\:bg-\[\#1e2436\]:hover,
-html.light .hover\:bg-\[\#1e2436\]:hover {
+/* Cards, Modals, Drawers & Surface Elements */
+[data-theme="light"] [class*="bg-[#12141d]"],
+[data-theme="light"] [class*="bg-[#12141c]"] {
+  background-color: #ffffff !important;
+}
+
+/* Subtle Secondary Containers (e.g. inner cards, pill backgrounds) */
+[data-theme="light"] [class*="bg-[#161926]"],
+[data-theme="light"] [class*="bg-[#1a1e2e]"] {
+  background-color: #f1f5f9 !important;
+}
+
+/* Hovers & Active States */
+[data-theme="light"] [class*="hover:bg-[#1e2436]"]:hover,
+[data-theme="light"] [class*="hover:bg-[#161926]"]:hover {
   background-color: #e2e8f0 !important;
 }
 
-[data-theme="light"] .active\:bg-\[\#161926\]:active,
-html.light .active\:bg-\[\#161926\]:active {
-  background-color: #e2e8f0 !important;
+[data-theme="light"] [class*="active:bg-[#161926]"]:active {
+  background-color: #cbd5e1 !important;
 }
 
-[data-theme="light"] .border-\[\#1e2436\],
-html.light .border-\[\#1e2436\] {
+/* Borders */
+[data-theme="light"] [class*="border-[#1e2436]"],
+[data-theme="light"] [class*="border-[#1f2433]"],
+[data-theme="light"] [class*="border-slate-800"] {
   border-color: #e2e8f0 !important;
 }
 
+/* Typography Hierarchy */
 [data-theme="light"] .text-slate-100,
 [data-theme="light"] .text-slate-200,
-html.light .text-slate-100,
-html.light .text-slate-200 {
+[data-theme="light"] .text-white {
   color: #0f172a !important;
 }
 
 [data-theme="light"] .text-slate-300,
-[data-theme="light"] .text-slate-400,
-html.light .text-slate-300,
-html.light .text-slate-400 {
-  color: #475569 !important;
+[data-theme="light"] .text-slate-400 {
+  color: #334155 !important;
 }
 
-[data-theme="light"] select,
-html.light select {
-  background-color: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+[data-theme="light"] .text-slate-500,
+[data-theme="light"] .text-slate-600 {
+  color: #64748b !important;
 }
 
-[data-theme="light"] select option,
-html.light select option {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-}
-
-[data-theme="light"] .select-trigger,
-html.light .select-trigger {
+/* Inputs, Textareas & Form Controls */
+[data-theme="light"] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+[data-theme="light"] textarea {
   background-color: #ffffff !important;
   border-color: #cbd5e1 !important;
   color: #0f172a !important;
 }
 
-[data-theme="light"] .select-value-text,
-html.light .select-value-text {
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] select {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+[data-theme="light"] select option {
+  background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
-[data-theme="light"] .select-dropdown-menu,
-html.light .select-dropdown-menu {
+/* CustomSelect Light Styling */
+[data-theme="light"] .select-trigger {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .select-value-text {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .select-dropdown-menu {
   background-color: #ffffff !important;
   border-color: #e2e8f0 !important;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.04) !important;
 }
 
-[data-theme="light"] .select-option-item,
-html.light .select-option-item {
+[data-theme="light"] .select-option-item {
   color: #1e293b !important;
 }
 
-[data-theme="light"] .select-option-item:hover,
-html.light .select-option-item:hover {
+[data-theme="light"] .select-option-item:hover {
   background-color: #f1f5f9 !important;
   color: #0f172a !important;
 }
 
-/* iOS elastic scroll containment */
+/* Chart Tooltips & Cards in Light Mode */
+[data-theme="light"] .recharts-default-tooltip,
+[data-theme="light"] .recharts-tooltip-wrapper > div {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1) !important;
+}
+
+/* Table Light Styles */
+[data-theme="light"] table thead {
+  background-color: #f8fafc !important;
+}
+
+[data-theme="light"] table tbody tr {
+  border-color: #f1f5f9 !important;
+}
+
+[data-theme="light"] table tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Mobile Bottom Navigation & Sticky Headers */
+[data-theme="light"] header,
+[data-theme="light"] nav {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Safe Area Inset Support & Scroll Containment */
 html, body {
   overscroll-behavior-y: none;
 }
 
-/* Custom modern scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -181,13 +243,4 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
-}
-
-/* Safe area padding utilities */
-.safe-pb {
-  padding-bottom: env(safe-area-inset-bottom, 1rem);
-}
-
-.safe-pt {
-  padding-top: env(safe-area-inset-top, 1rem);
 }

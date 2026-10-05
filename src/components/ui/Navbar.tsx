@@ -61,7 +61,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#0a0b10]/95 dark:bg-[#0a0b10]/95 backdrop-blur-md border-b border-[#1e2436] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 transition-colors">
+      <header className="sticky top-0 z-40 bg-[var(--card-bg)] border-b border-[var(--card-border)] px-3 sm:px-4 lg:px-8 pt-[calc(0.625rem+env(safe-area-inset-top,0px))] pb-2.5 sm:pb-3 transition-colors shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           {/* Brand Logo & Scope Selector */}
           <div className="flex items-center gap-2 sm:gap-3">
