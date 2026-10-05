@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    // 3. Save pending pairing into telegram_bindings (guaranteed table) & telegram_pairing_codes
+    // 3. Save pending pairing into telegram_bindings (guaranteed table)
     if (supabase) {
       try {
         await supabase.from('telegram_bindings').upsert({
@@ -29,21 +29,9 @@ export async function POST(req: NextRequest) {
           telegram_chat_id: 'PENDING',
           user_id: userId,
           tenant_id: tenantId,
-          updated_at: expiresAt,
         });
       } catch (e) {
         console.warn('telegram_bindings pending pairing write error:', e);
-      }
-
-      try {
-        await supabase.from('telegram_pairing_codes').upsert({
-          code: shortCode,
-          user_id: userId,
-          tenant_id: tenantId,
-          expires_at: expiresAt,
-        });
-      } catch (e) {
-        // Table might not exist yet
       }
     }
 
@@ -78,7 +66,7 @@ export async function GET(req: NextRequest) {
           .select('*')
           .eq('user_id', userId)
           .not('telegram_user_id', 'like', 'PENDING_%')
-          .order('updated_at', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 

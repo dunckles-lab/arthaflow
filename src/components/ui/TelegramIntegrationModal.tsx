@@ -91,7 +91,7 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const telegramDeepLink = `https://t.me/${botUsername}?start=${deepLinkCode || displayCode}`;
+  const telegramDeepLink = `https://t.me/${botUsername}?start=${displayCode || deepLinkCode}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">

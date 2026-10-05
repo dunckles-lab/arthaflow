@@ -171,125 +171,149 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
 
+    let isMounted = true;
+
+    // Safety timeout: Guarantee user is never stuck in loading screen
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setIsAuthChecking(false);
+      }
+    }, 2000);
+
     // Check active session on mount
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
       if (session?.user) {
-        await handleAuthUser(session.user);
+        setTimeout(() => {
+          if (isMounted) handleAuthUser(session.user);
+        }, 0);
       } else {
         setIsAuthenticated(false);
+        setIsAuthChecking(false);
       }
-      setIsAuthChecking(false);
     }).catch(() => {
-      setIsAuthChecking(false);
+      if (isMounted) setIsAuthChecking(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
       if (session?.user) {
-        await handleAuthUser(session.user);
+        setTimeout(() => {
+          if (isMounted) handleAuthUser(session.user);
+        }, 0);
       } else {
         setAuthEmail(null);
         setIsAuthenticated(false);
+        setIsAuthChecking(false);
       }
-      setIsAuthChecking(false);
     });
 
     return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);
 
   const handleAuthUser = async (authUser: any) => {
-    const email = (authUser.email || '').trim().toLowerCase();
-    const fullName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0];
-    const avatar = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
+    try {
+      const email = (authUser.email || '').trim().toLowerCase();
+      const fullName = authUser.user_metadata?.full_name || authUser.user_metadata?.name || email.split('@')[0];
+      const avatar = authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture;
 
-    const isOwner = email === 'dunckles123@gmail.com';
-    const supabase = getSupabase();
-    let matchedUser: User | null = null;
+      const isOwner = email === 'dunckles123@gmail.com';
+      const supabase = getSupabase();
+      let matchedUser: User | null = null;
 
-    if (supabase && isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .ilike('email', email)
-          .maybeSingle();
-
-        if (!error && data) {
-          matchedUser = data;
-        }
-      } catch (err) {
-        console.warn('Supabase user lookup error:', err);
-      }
-    }
-
-    // Check pre-registered initial users
-    if (!matchedUser) {
-      const localMatch = initialUsers.find((u) => u.email.toLowerCase() === email);
-      if (localMatch) {
-        matchedUser = localMatch;
-      }
-    }
-
-    // Superadmin owner bootstrap if DB has not yet inserted the owner record
-    if (!matchedUser && isOwner) {
-      matchedUser = {
-        id: authUser.id || '00000000-0000-0000-0000-000000000001',
-        email,
-        name: `${fullName} (Superadmin)`,
-        role: 'superadmin',
-        tenant_id: '11111111-1111-1111-1111-111111111111',
-        avatar_url: avatar,
-        created_at: new Date().toISOString(),
-      };
       if (supabase && isSupabaseConfigured()) {
         try {
-          await supabase.from('users').upsert([matchedUser]);
-        } catch (e) {
-          console.warn('Upsert owner record error:', e);
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .ilike('email', email)
+            .maybeSingle();
+
+          if (!error && data) {
+            matchedUser = data;
+          }
+        } catch (err) {
+          console.warn('Supabase user lookup error:', err);
         }
       }
-    }
 
-    // STRICT SECURITY GATE: If email is not registered in database, REJECT IMMEDIATELY
-    if (!matchedUser) {
-      console.warn(`SECURITY: Unauthorized login attempt blocked for unregistered email: ${email}`);
-      await signOutSupabase();
-      setAuthEmail(null);
-      setIsAuthenticated(false);
-      setAuthError(`Akses Ditolak: Email "${email}" belum terdaftar di sistem ArthaFlow. Hubungi Administrator untuk mendaftarkan akun Anda.`);
-      return;
-    }
-
-    // User is authorized
-    setAuthError(null);
-    setAuthEmail(email);
-    setIsAuthenticated(true);
-
-    const updatedUser: User = {
-      ...matchedUser,
-      name: fullName || matchedUser.name,
-      avatar_url: avatar || matchedUser.avatar_url,
-      role: isOwner ? ('superadmin' as UserRole) : matchedUser.role,
-    };
-
-    setCurrentUserState(updatedUser);
-    setAllUsers((prev) => {
-      const exists = prev.some((u) => u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase());
-      if (exists) {
-        return prev.map((u) => (u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase() ? updatedUser : u));
+      // Check pre-registered initial users
+      if (!matchedUser) {
+        const localMatch = initialUsers.find((u) => u.email.toLowerCase() === email);
+        if (localMatch) {
+          matchedUser = localMatch;
+        }
       }
-      return [...prev, updatedUser];
-    });
 
-    // Automatically align tenant with the user's assigned tenant
-    if (updatedUser.tenant_id) {
-      const targetTenant = tenants.find((t) => t.id === updatedUser.tenant_id);
-      if (targetTenant) {
-        setCurrentTenant(targetTenant);
+      // Superadmin owner bootstrap if DB has not yet inserted the owner record
+      if (!matchedUser && isOwner) {
+        matchedUser = {
+          id: authUser.id || '00000000-0000-0000-0000-000000000001',
+          email,
+          name: `${fullName} (Superadmin)`,
+          role: 'superadmin',
+          tenant_id: '11111111-1111-1111-1111-111111111111',
+          avatar_url: avatar,
+          created_at: new Date().toISOString(),
+        };
+        if (supabase && isSupabaseConfigured()) {
+          try {
+            await supabase.from('users').upsert([matchedUser]);
+          } catch (e) {
+            console.warn('Upsert owner record error:', e);
+          }
+        }
       }
+
+      // STRICT SECURITY GATE: If email is not registered in database, REJECT IMMEDIATELY
+      if (!matchedUser) {
+        console.warn(`SECURITY: Unauthorized login attempt blocked for unregistered email: ${email}`);
+        await signOutSupabase();
+        setAuthEmail(null);
+        setIsAuthenticated(false);
+        setIsAuthChecking(false);
+        setAuthError(`Akses Ditolak: Email "${email}" belum terdaftar di sistem ArthaFlow. Hubungi Administrator untuk mendaftarkan akun Anda.`);
+        return;
+      }
+
+      // User is authorized
+      setAuthError(null);
+      setAuthEmail(email);
+      setIsAuthenticated(true);
+      setIsAuthChecking(false);
+
+      const updatedUser: User = {
+        ...matchedUser,
+        name: fullName || matchedUser.name,
+        avatar_url: avatar || matchedUser.avatar_url,
+        role: isOwner ? ('superadmin' as UserRole) : matchedUser.role,
+      };
+
+      setCurrentUserState(updatedUser);
+      setAllUsers((prev) => {
+        const exists = prev.some((u) => u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase());
+        if (exists) {
+          return prev.map((u) => (u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase() ? updatedUser : u));
+        }
+        return [...prev, updatedUser];
+      });
+
+      // Automatically align tenant with the user's assigned tenant
+      if (updatedUser.tenant_id) {
+        const targetTenant = tenants.find((t) => t.id === updatedUser.tenant_id);
+        if (targetTenant) {
+          setCurrentTenant(targetTenant);
+        }
+      }
+    } catch (authErr) {
+      console.error('handleAuthUser unexpected error:', authErr);
+      setIsAuthChecking(false);
     }
   };
 

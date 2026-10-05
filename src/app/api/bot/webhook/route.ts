@@ -254,12 +254,12 @@ async function handlePairing(
     if (supabase) {
       try {
         await supabase.from('telegram_bindings').upsert({
+          id: `tb_${telegramUserId}`,
           telegram_user_id: String(telegramUserId),
           telegram_username: telegramUsername || '',
           telegram_chat_id: String(chatId),
           user_id: targetUserId,
           tenant_id: targetTenantId,
-          updated_at: new Date().toISOString(),
         });
       } catch (dbErr) {
         console.warn('Supabase binding write error:', dbErr);
@@ -294,7 +294,7 @@ async function getBinding(telegramUserId: string, supabase: any) {
         .select('*')
         .eq('telegram_user_id', String(telegramUserId))
         .not('telegram_user_id', 'like', 'PENDING_%')
-        .order('updated_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
