@@ -76,6 +76,11 @@ interface FinanceContextType {
   addUser: (user: Omit<User, 'id' | 'created_at'>) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
 
+  // Theme state
+  theme: 'dark' | 'light';
+  setTheme: (theme: 'dark' | 'light') => void;
+  toggleTheme: () => void;
+
   // System & Connection State
   isLiveDbConnected: boolean;
   syncStatus: 'synced' | 'syncing' | 'offline';
@@ -94,6 +99,48 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [authEmail, setAuthEmail] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+  const [theme, setThemeState] = useState<'dark' | 'light'>('dark');
+
+  // Load theme preference on mount
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem('arthaflow_theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        setThemeState(savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'light') {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        }
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.documentElement.classList.add('dark');
+      }
+    } catch (e) {}
+  }, []);
+
+  const setTheme = (newTheme: 'dark' | 'light') => {
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem('arthaflow_theme', newTheme);
+      document.documentElement.setAttribute('data-theme', newTheme);
+      if (newTheme === 'light') {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    } catch (e) {}
+  };
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+  };
 
   // Listen to Supabase Auth State Change (Google SSO)
   useEffect(() => {
@@ -835,6 +882,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateVisibilityRule,
         addUser,
         deleteUser,
+        theme,
+        setTheme,
+        toggleTheme,
         isLiveDbConnected,
         syncStatus,
         lastSyncTime,

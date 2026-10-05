@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { AmountInput } from './AmountInput';
 import { ColorPickerInput } from './ColorPickerInput';
+import { CustomSelect } from './CustomSelect';
 
 interface CategoryManagementModalProps {
   isOpen: boolean;
@@ -192,14 +193,14 @@ export const CategoryManagementModal: React.FC<CategoryManagementModalProps> = (
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">Tipe</label>
-                <select
+                <CustomSelect
                   value={type}
-                  onChange={(e: any) => setType(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                >
-                  <option value="expense">Pengeluaran</option>
-                  <option value="income">Pemasukan</option>
-                </select>
+                  onChange={(val: any) => setType(val)}
+                  options={[
+                    { value: 'expense', label: 'Pengeluaran' },
+                    { value: 'income', label: 'Pemasukan' },
+                  ]}
+                />
               </div>
 
               {/* AmountInput with Auto-Formatting & Terbilang */}

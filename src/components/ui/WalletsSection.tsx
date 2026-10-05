@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { AmountInput } from './AmountInput';
 import { ColorPickerInput } from './ColorPickerInput';
+import { CustomSelect } from './CustomSelect';
 
 export const WalletsSection: React.FC = () => {
   const { wallets, addWallet, updateWallet, deleteWallet, currentUser } = useFinance();
@@ -227,16 +228,16 @@ export const WalletsSection: React.FC = () => {
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">Tipe Akun</label>
-                  <select
+                  <CustomSelect
                     value={type}
-                    onChange={(e: any) => setType(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                  >
-                    <option value="bank">Bank Transfer</option>
-                    <option value="e-wallet">E-Wallet</option>
-                    <option value="cash">Kas Tunai</option>
-                    <option value="investment">Investasi</option>
-                  </select>
+                    onChange={(val: any) => setType(val)}
+                    options={[
+                      { value: 'bank', label: 'Bank Transfer' },
+                      { value: 'e-wallet', label: 'E-Wallet' },
+                      { value: 'cash', label: 'Kas Tunai' },
+                      { value: 'investment', label: 'Investasi' },
+                    ]}
+                  />
                 </div>
 
                 <div>

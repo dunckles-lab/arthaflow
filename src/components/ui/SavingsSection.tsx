@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { AmountInput } from './AmountInput';
 import { ColorPickerInput } from './ColorPickerInput';
+import { CustomSelect } from './CustomSelect';
 
 export const SavingsSection: React.FC = () => {
   const {
@@ -373,17 +374,14 @@ export const SavingsSection: React.FC = () => {
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">Kategori</label>
-                  <select
+                  <CustomSelect
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 cursor-pointer"
-                  >
-                    {categoryPresets.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setCategory(val)}
+                    options={categoryPresets.map((cat) => ({
+                      value: cat,
+                      label: cat,
+                    }))}
+                  />
                 </div>
 
                 <div>
@@ -466,17 +464,15 @@ export const SavingsSection: React.FC = () => {
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Ambil dari Rekening / Dompet
                 </label>
-                <select
+                <CustomSelect
                   value={depositWalletId}
-                  onChange={(e) => setDepositWalletId(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 cursor-pointer"
-                >
-                  {wallets.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setDepositWalletId(val)}
+                  options={wallets.map((w) => ({
+                    value: w.id,
+                    label: w.name,
+                    badge: `Rp ${w.balance.toLocaleString('id-ID')}`,
+                  }))}
+                />
               </div>
 
               <div>
@@ -560,17 +556,15 @@ export const SavingsSection: React.FC = () => {
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   Kirim ke Rekening / Dompet Tujuan
                 </label>
-                <select
+                <CustomSelect
                   value={withdrawWalletId}
-                  onChange={(e) => setWithdrawWalletId(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-rose-500 cursor-pointer"
-                >
-                  {wallets.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} (Saldo: Rp {w.balance.toLocaleString('id-ID')})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setWithdrawWalletId(val)}
+                  options={wallets.map((w) => ({
+                    value: w.id,
+                    label: w.name,
+                    badge: `Rp ${w.balance.toLocaleString('id-ID')}`,
+                  }))}
+                />
               </div>
 
               <div>

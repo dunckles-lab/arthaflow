@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { CategoryManagementModal } from './CategoryManagementModal';
 import { AmountInput } from './AmountInput';
+import { CustomSelect } from './CustomSelect';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -150,17 +151,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 <label className="block text-xs font-medium text-slate-300 mb-1">
                   {type === 'transfer' ? 'Dari Rekening / Dompet' : 'Rekening / Dompet'}
                 </label>
-                <select
+                <CustomSelect
                   value={walletId}
-                  onChange={(e) => setWalletId(e.target.value)}
-                  className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                >
-                  {wallets.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.name} (Rp {w.balance.toLocaleString('id-ID')})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setWalletId(val)}
+                  options={wallets.map((w) => ({
+                    value: w.id,
+                    label: w.name,
+                    badge: `Rp ${w.balance.toLocaleString('id-ID')}`,
+                  }))}
+                />
               </div>
 
               {type === 'transfer' ? (
@@ -168,19 +167,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                   <label className="block text-xs font-medium text-slate-300 mb-1">
                     Ke Rekening Tujuan
                   </label>
-                  <select
+                  <CustomSelect
                     value={targetWalletId}
-                    onChange={(e) => setTargetWalletId(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-                  >
-                    {wallets
+                    onChange={(val) => setTargetWalletId(val)}
+                    options={wallets
                       .filter((w) => w.id !== walletId)
-                      .map((w) => (
-                        <option key={w.id} value={w.id}>
-                          {w.name} (Rp {w.balance.toLocaleString('id-ID')})
-                        </option>
-                      ))}
-                  </select>
+                      .map((w) => ({
+                        value: w.id,
+                        label: w.name,
+                        badge: `Rp ${w.balance.toLocaleString('id-ID')}`,
+                      }))}
+                    placeholder="Pilih rekening tujuan..."
+                  />
                 </div>
               ) : (
                 <div>
@@ -194,18 +192,19 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                       + Kelola Kategori
                     </button>
                   </div>
-                  <select
+                  <CustomSelect
                     value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                  >
-                    <option value="">Pilih Kategori...</option>
-                    {filteredCategories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setCategoryId(val)}
+                    options={[
+                      { value: '', label: 'Pilih Kategori...' },
+                      ...filteredCategories.map((c) => ({
+                        value: c.id,
+                        label: c.name,
+                        badge: c.type === 'expense' ? 'Pengeluaran' : 'Pemasukan',
+                      })),
+                    ]}
+                    placeholder="Pilih Kategori..."
+                  />
                 </div>
               )}
             </div>

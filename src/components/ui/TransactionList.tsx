@@ -14,6 +14,7 @@ import {
   Tag,
   User as UserIcon,
 } from 'lucide-react';
+import { CustomSelect } from './CustomSelect';
 
 export const TransactionList: React.FC = () => {
   const { transactions, wallets, categories, deleteTransaction, periodFilter } = useFinance();
@@ -100,32 +101,34 @@ export const TransactionList: React.FC = () => {
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* Type filter */}
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="flex-1 sm:flex-initial bg-[#0a0b10] border border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
-            >
-              <option value="all">Semua Tipe</option>
-              <option value="income">Pemasukan</option>
-              <option value="expense">Pengeluaran</option>
-              <option value="transfer">Transfer</option>
-            </select>
+            <div className="w-full sm:w-36">
+              <CustomSelect
+                value={filterType}
+                onChange={(val) => setFilterType(val)}
+                options={[
+                  { value: 'all', label: 'Semua Tipe' },
+                  { value: 'income', label: 'Pemasukan' },
+                  { value: 'expense', label: 'Pengeluaran' },
+                  { value: 'transfer', label: 'Transfer' },
+                ]}
+                size="sm"
+              />
+            </div>
 
             {/* Wallet filter */}
-            <select
-              value={filterWallet}
-              onChange={(e) => setFilterWallet(e.target.value)}
-              className="flex-1 sm:flex-initial bg-[#0a0b10] border border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500"
-            >
-              <option value="all">Semua Rekening</option>
-              {wallets.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </select>
+            <div className="w-full sm:w-44">
+              <CustomSelect
+                value={filterWallet}
+                onChange={(val) => setFilterWallet(val)}
+                options={[
+                  { value: 'all', label: 'Semua Rekening' },
+                  ...wallets.map((w) => ({ value: w.id, label: w.name })),
+                ]}
+                size="sm"
+              />
+            </div>
           </div>
         </div>
       </div>

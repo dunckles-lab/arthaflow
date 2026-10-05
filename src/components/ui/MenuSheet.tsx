@@ -13,7 +13,10 @@ import {
   LogOut,
   UserCheck,
   Tag,
+  Sun,
+  Moon,
 } from 'lucide-react';
+import { CustomSelect } from './CustomSelect';
 
 interface MenuSheetProps {
   isOpen: boolean;
@@ -46,12 +49,26 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
     isLiveDbConnected,
     logout,
     authEmail,
+    theme,
+    toggleTheme,
   } = useFinance();
 
   if (!isOpen) return null;
 
   const isSuperadmin = currentUser.role === 'superadmin';
   const isAdmin = currentUser.role === 'admin';
+
+  const tenantOptions = tenants.map((t) => ({
+    value: t.id,
+    label: t.name,
+    badge: t.type === 'household' ? 'Rumah Tangga' : t.type === 'personal' ? 'Pribadi' : 'Organisasi',
+  }));
+
+  const userOptions = allUsers.map((u) => ({
+    value: u.id,
+    label: u.name,
+    badge: u.role.toUpperCase(),
+  }));
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -77,32 +94,51 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200"
+            className="w-8 h-8 rounded-full bg-[#1e2436] hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
+        {/* Theme Switcher Card */}
+        <div className="mt-4 p-3 rounded-2xl bg-[#0a0b10] border border-[#1e2436] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {theme === 'dark' ? (
+              <Moon className="w-4 h-4 text-indigo-400" />
+            ) : (
+              <Sun className="w-4 h-4 text-amber-400" />
+            )}
+            <div>
+              <span className="text-xs font-semibold text-slate-200 block">Tema Tampilan</span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                {theme === 'dark' ? 'Mode Gelap (Dark)' : 'Mode Terang (Light)'}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="px-3 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-semibold text-slate-200 transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
+            <span>{theme === 'dark' ? 'Ganti Terang' : 'Ganti Gelap'}</span>
+          </button>
+        </div>
+
         {/* Scope Selector */}
-        <div className="mt-4 p-3 rounded-2xl bg-[#0a0b10] border border-[#1e2436]">
+        <div className="mt-3 p-3 rounded-2xl bg-[#0a0b10] border border-[#1e2436]">
           <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5 mb-2">
             <Layers className="w-3.5 h-3.5 text-indigo-400" />
             Pilih Scope Keuangan Aktif
           </label>
-          <select
+          <CustomSelect
             value={currentTenant.id}
-            onChange={(e) => {
-              const selected = tenants.find((t) => t.id === e.target.value);
+            onChange={(val) => {
+              const selected = tenants.find((t) => t.id === val);
               if (selected) setCurrentTenant(selected);
             }}
-            className="w-full bg-[#161926] border border-[#1e2436] rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none"
-          >
-            {tenants.map((t) => (
-              <option key={t.id} value={t.id} className="bg-[#12141d] text-slate-200">
-                {t.name} ({t.type === 'household' ? 'Rumah Tangga' : t.type === 'personal' ? 'Pribadi' : 'Organisasi'})
-              </option>
-            ))}
-          </select>
+            options={tenantOptions}
+          />
         </div>
 
         {/* Quick Menu List */}
@@ -113,7 +149,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
               onClose();
               onOpenCategories();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <Tag className="w-4 h-4 text-emerald-400" />
@@ -128,7 +164,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
               onClose();
               onOpenExport();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <Download className="w-4 h-4 text-slate-300" />
@@ -143,7 +179,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
               onClose();
               onOpenDb();
             }}
-            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+            className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-2.5">
               <Database className="w-4 h-4 text-cyan-400" />
@@ -168,7 +204,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
                   onClose();
                   onOpenVisibility();
                 }}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <ShieldCheck className="w-4 h-4 text-indigo-400" />
@@ -182,7 +218,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
                   onClose();
                   onOpenUsers();
                 }}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <Users className="w-4 h-4 text-slate-300" />
@@ -200,7 +236,7 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
                 onClose();
                 onOpenAudit();
               }}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors"
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-[#161926] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-200 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
                 <History className="w-4 h-4 text-amber-400" />
@@ -213,24 +249,18 @@ export const MenuSheet: React.FC<MenuSheetProps> = ({
 
         {/* Demo Switch Role */}
         <div className="mt-4 p-3 rounded-2xl bg-[#0a0b10] border border-[#1e2436]">
-          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5 mb-1.5">
+          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5 mb-2">
             <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
             Simulasi Ganti Peran (Dev/Demo)
           </label>
-          <select
+          <CustomSelect
             value={currentUser.id}
-            onChange={(e) => {
-              const selected = allUsers.find((u) => u.id === e.target.value);
+            onChange={(val) => {
+              const selected = allUsers.find((u) => u.id === val);
               if (selected) setCurrentUser(selected);
             }}
-            className="w-full bg-[#161926] border border-[#1e2436] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none"
-          >
-            {allUsers.map((u) => (
-              <option key={u.id} value={u.id} className="bg-[#12141d] text-slate-200">
-                {u.name} ({u.role.toUpperCase()})
-              </option>
-            ))}
-          </select>
+            options={userOptions}
+          />
         </div>
 
         {/* Logout Button */}

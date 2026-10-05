@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useFinance } from '@/lib/store';
 import { Users, UserPlus, Trash2, Shield, UserCheck, ShieldAlert, X } from 'lucide-react';
 import { UserRole } from '@/types';
+import { CustomSelect } from './CustomSelect';
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -143,15 +144,15 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div>
                 <label className="block text-[11px] font-medium text-slate-300 mb-1">Peran / Role</label>
-                <select
+                <CustomSelect
                   value={role}
-                  onChange={(e: any) => setRole(e.target.value)}
-                  className="w-full bg-[#12141d] border border-[#1e2436] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                >
-                  <option value="user">User / Partner (Dibatasi Aturan Visibilitas)</option>
-                  <option value="admin">Admin (Pemilik Scope)</option>
-                  {isSuperadmin && <option value="superadmin">Superadmin (Global)</option>}
-                </select>
+                  onChange={(val: any) => setRole(val)}
+                  options={[
+                    { value: 'user', label: 'User / Partner (Dibatasi Aturan Visibilitas)' },
+                    { value: 'admin', label: 'Admin (Pemilik Scope)' },
+                    ...(isSuperadmin ? [{ value: 'superadmin', label: 'Superadmin (Global)' }] : []),
+                  ]}
+                />
               </div>
 
               {isSuperadmin ? (
@@ -159,17 +160,14 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                   <label className="block text-[11px] font-medium text-slate-300 mb-1">
                     Scope Entitas / Tenant
                   </label>
-                  <select
+                  <CustomSelect
                     value={tenantId}
-                    onChange={(e) => setTenantId(e.target.value)}
-                    className="w-full bg-[#12141d] border border-[#1e2436] rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                  >
-                    {tenants.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} ({t.type})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(val) => setTenantId(val)}
+                    options={tenants.map((t) => ({
+                      value: t.id,
+                      label: `${t.name} (${t.type})`,
+                    }))}
+                  />
                 </div>
               ) : (
                 <div>

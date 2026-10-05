@@ -12,6 +12,8 @@ import {
   Plus,
   Menu,
   Tag,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { TransactionModal } from './TransactionModal';
 import { VisibilityConfigModal } from './VisibilityConfigModal';
@@ -21,6 +23,7 @@ import { ExportModal } from './ExportModal';
 import { DatabaseConfigModal } from './DatabaseConfigModal';
 import { CategoryManagementModal } from './CategoryManagementModal';
 import { MenuSheet } from './MenuSheet';
+import { CustomSelect } from './CustomSelect';
 
 export const Navbar: React.FC = () => {
   const {
@@ -28,10 +31,10 @@ export const Navbar: React.FC = () => {
     tenants,
     setCurrentTenant,
     currentUser,
-    allUsers,
-    setCurrentUser,
     isLiveDbConnected,
     logout,
+    theme,
+    toggleTheme,
   } = useFinance();
 
   // Modals state
@@ -47,9 +50,15 @@ export const Navbar: React.FC = () => {
   const isSuperadmin = currentUser.role === 'superadmin';
   const isAdmin = currentUser.role === 'admin';
 
+  const tenantOptions = tenants.map((t) => ({
+    value: t.id,
+    label: t.name,
+    badge: t.type === 'household' ? 'Rumah Tangga' : t.type === 'personal' ? 'Pribadi' : 'Organisasi',
+  }));
+
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#0a0b10]/95 backdrop-blur-md border-b border-[#1e2436] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3">
+      <header className="sticky top-0 z-40 bg-[#0a0b10]/95 dark:bg-[#0a0b10]/95 backdrop-blur-md border-b border-[#1e2436] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           {/* Brand Logo & Scope Selector */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -66,32 +75,40 @@ export const Navbar: React.FC = () => {
               <p className="text-[10px] text-slate-400 hidden sm:block">Financial Operating System</p>
             </div>
 
-            {/* Scope / Tenant Selector (Desktop Only or compact mobile) */}
-            <div className="hidden sm:flex items-center gap-1.5 bg-[#12141d] border border-[#1e2436] rounded-xl px-2.5 py-1.5 text-xs ml-2">
-              <Layers className="w-3.5 h-3.5 text-indigo-400" />
-              <select
+            {/* Scope / Tenant Custom Select (Desktop) */}
+            <div className="hidden sm:block ml-2 w-56">
+              <CustomSelect
                 value={currentTenant.id}
-                onChange={(e) => {
-                  const selected = tenants.find((t) => t.id === e.target.value);
+                onChange={(val) => {
+                  const selected = tenants.find((t) => t.id === val);
                   if (selected) setCurrentTenant(selected);
                 }}
-                className="bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer max-w-[150px] truncate"
-              >
-                {tenants.map((t) => (
-                  <option key={t.id} value={t.id} className="bg-[#12141d] text-slate-200">
-                    {t.name} ({t.type === 'household' ? 'Rumah Tangga' : t.type === 'personal' ? 'Pribadi' : 'Organisasi'})
-                  </option>
-                ))}
-              </select>
+                options={tenantOptions}
+                placeholder="Pilih Scope..."
+              />
             </div>
           </div>
 
           {/* Desktop Navigation Controls */}
           <div className="hidden md:flex items-center gap-2">
+            {/* Dark / Light Mode Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-slate-300 hover:text-emerald-400 transition-colors cursor-pointer"
+              title={theme === 'dark' ? 'Ganti ke Mode Terang (Light Mode)' : 'Ganti ke Mode Gelap (Dark Mode)'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-400" />
+              )}
+            </button>
+
             {/* Supabase status badge */}
             <button
               onClick={() => setIsDbModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-[11px] text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-[11px] text-slate-300 transition-colors cursor-pointer"
               title="Konfigurasi Database"
             >
               <span
@@ -105,7 +122,7 @@ export const Navbar: React.FC = () => {
             {/* Category Management Button */}
             <button
               onClick={() => setIsCatModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
               title="Kelola Kategori"
             >
               <Tag className="w-3.5 h-3.5 text-emerald-400" />
@@ -115,7 +132,7 @@ export const Navbar: React.FC = () => {
             {/* Export Reports Button */}
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-slate-300" />
               <span>Ekspor</span>
@@ -126,7 +143,7 @@ export const Navbar: React.FC = () => {
               <>
                 <button
                   onClick={() => setIsVisModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-indigo-300 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-indigo-300 transition-colors cursor-pointer"
                   title="Atur Hak Visibilitas Anggota"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -135,7 +152,7 @@ export const Navbar: React.FC = () => {
 
                 <button
                   onClick={() => setIsUserModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
                   title="Manajemen Pengguna"
                 >
                   <Users className="w-3.5 h-3.5" />
@@ -147,7 +164,7 @@ export const Navbar: React.FC = () => {
             {isSuperadmin && (
               <button
                 onClick={() => setIsAuditModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-amber-300 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-amber-300 transition-colors cursor-pointer"
                 title="Log Audit Sistem"
               >
                 <History className="w-3.5 h-3.5" />
@@ -158,14 +175,14 @@ export const Navbar: React.FC = () => {
             {/* Primary Action: Catat Transaksi */}
             <button
               onClick={() => setIsTxModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               Catat Transaksi
             </button>
 
             {/* User Account / Logout */}
-            <div className="flex items-center gap-2 bg-[#12141d] border border-emerald-500/30 rounded-xl px-2.5 py-1">
+            <div className="flex items-center gap-2 bg-[#12141d] border border-emerald-500/30 rounded-xl px-2.5 py-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-400" />
               <div className="flex flex-col">
                 <span className="text-[11px] font-semibold text-slate-200">{currentUser.name}</span>
@@ -183,12 +200,26 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile Right Controls: Compact Scope Trigger + Menu Button */}
+          {/* Mobile Right Controls: Theme Toggle + Quick Scope Trigger + Menu Button */}
           <div className="flex md:hidden items-center gap-1.5">
+            {/* Light / Dark Mode Toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="w-8 h-8 rounded-xl bg-[#12141d] border border-[#1e2436] flex items-center justify-center text-slate-300 active:scale-95 cursor-pointer"
+              title="Ganti Tema"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-400" />
+              )}
+            </button>
+
             {/* Quick scope badge */}
             <button
               onClick={() => setIsMenuSheetOpen(true)}
-              className="px-2 py-1 rounded-lg bg-[#12141d] border border-[#1e2436] text-[11px] font-medium text-slate-300 flex items-center gap-1 max-w-[130px] truncate"
+              className="px-2.5 py-1.5 rounded-xl bg-[#12141d] border border-[#1e2436] text-[11px] font-medium text-slate-300 flex items-center gap-1.5 max-w-[130px] truncate cursor-pointer"
             >
               <Layers className="w-3 h-3 text-indigo-400 shrink-0" />
               <span className="truncate">{currentTenant.name}</span>
@@ -197,7 +228,7 @@ export const Navbar: React.FC = () => {
             {/* User Profile & Menu Sheet Trigger */}
             <button
               onClick={() => setIsMenuSheetOpen(true)}
-              className="w-8 h-8 rounded-lg bg-[#12141d] border border-[#1e2436] flex items-center justify-center text-slate-300 active:scale-95"
+              className="w-8 h-8 rounded-xl bg-[#12141d] border border-[#1e2436] flex items-center justify-center text-slate-300 active:scale-95 cursor-pointer"
               aria-label="Menu"
             >
               <Menu className="w-4 h-4" />

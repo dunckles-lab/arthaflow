@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useFinance } from '@/lib/store';
 import { ShieldCheck, Eye, EyeOff, Check, X, PiggyBank } from 'lucide-react';
 import { VisibilityRule } from '@/types';
+import { CustomSelect } from './CustomSelect';
 
 interface VisibilityConfigModalProps {
   isOpen: boolean;
@@ -166,17 +167,15 @@ export const VisibilityConfigModal: React.FC<VisibilityConfigModalProps> = ({
               Pilih Anggota yang Dikonfigurasi
             </label>
             {targetableUsers.length > 0 ? (
-              <select
+              <CustomSelect
                 value={selectedUserId}
-                onChange={(e) => handleUserSelect(e.target.value)}
-                className="w-full bg-[#0a0b10] border border-[#1e2436] rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-              >
-                {targetableUsers.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({u.email})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleUserSelect(val)}
+                options={targetableUsers.map((u) => ({
+                  value: u.id,
+                  label: u.name,
+                  badge: u.email,
+                }))}
+              />
             ) : (
               <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5">
                 Belum ada akun bertipe User/Partner di scope ini. Tambahkan anggota terlebih dahulu.
