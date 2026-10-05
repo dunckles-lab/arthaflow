@@ -173,11 +173,17 @@ async function handlePairing(
   supabase: any
 ) {
   try {
-    const code = rawCode.trim();
+    let code = rawCode.trim();
+    // Normalize code if user enters just numbers e.g. 520943 -> AF-520943
+    if (/^\d{6}$/.test(code)) {
+      code = `AF-${code}`;
+    }
+    const upperCode = code.toUpperCase();
+
     let targetUserId = '';
     let targetTenantId = '';
 
-    // 1. Try Stateless Signed Code Verification
+    // 1. Try Stateless Signed Code Verification (AF_...)
     if (code.startsWith('AF_') || code.startsWith('af_')) {
       const verified = verifySignedPairingCode(code);
       if (verified) {
@@ -186,32 +192,52 @@ async function handlePairing(
       }
     }
 
-    // 2. Try Supabase lookup if table exists
-    if (!targetUserId) {
+    // 2. Try Supabase telegram_bindings table lookup (PENDING_AF-XXXXXX)
+    if (!targetUserId && supabase) {
+      try {
+        const { data: pendingRecord, error: pErr } = await supabase
+          .from('telegram_bindings')
+          .select('*')
+          .eq('telegram_user_id', `PENDING_${upperCode}`)
+          .maybeSingle();
+
+        if (!pErr && pendingRecord) {
+          targetUserId = pendingRecord.user_id;
+          targetTenantId = pendingRecord.tenant_id;
+          // Delete used pending pairing record
+          await supabase.from('telegram_bindings').delete().eq('id', pendingRecord.id);
+        }
+      } catch (e) {
+        console.warn('Pending binding lookup error:', e);
+      }
+    }
+
+    // 3. Try Supabase telegram_pairing_codes table lookup
+    if (!targetUserId && supabase) {
       try {
         const { data, error } = await supabase
           .from('telegram_pairing_codes')
           .select('*')
-          .eq('code', code.toUpperCase())
+          .eq('code', upperCode)
           .maybeSingle();
 
         if (!error && data) {
           targetUserId = data.user_id;
           targetTenantId = data.tenant_id;
           // Delete used pairing code
-          await supabase.from('telegram_pairing_codes').delete().eq('code', code.toUpperCase());
+          await supabase.from('telegram_pairing_codes').delete().eq('code', upperCode);
         }
       } catch (e) {
-        console.warn('Pairing code DB lookup error:', e);
+        // Ignored if table doesn't exist
       }
     }
 
-    // 3. Fallback check: do not assign dummy IDs
+    // 4. If code is invalid or not found
     if (!targetUserId) {
       await sendTelegramMessage(
         chatId,
         `❌ <b>Kode pairing tidak valid atau telah kedaluwarsa.</b>\n\n` +
-        `Silakan generate kode pairing baru melalui dashboard Web ArthaFlow (Menu Integrasi Bot Telegram).`
+        `Silakan buka dashboard Web ArthaFlow, buka modal <b>Integrasi Bot Telegram</b>, lalu kirim kode pairing terbaru ke sini.`
       );
       return;
     }
@@ -225,17 +251,19 @@ async function handlePairing(
     });
 
     // Insert or update binding in Supabase
-    try {
-      await supabase.from('telegram_bindings').upsert({
-        telegram_user_id: telegramUserId,
-        telegram_username: telegramUsername,
-        telegram_chat_id: String(chatId),
-        user_id: targetUserId,
-        tenant_id: targetTenantId,
-        updated_at: new Date().toISOString(),
-      });
-    } catch (dbErr) {
-      console.warn('Supabase binding write error:', dbErr);
+    if (supabase) {
+      try {
+        await supabase.from('telegram_bindings').upsert({
+          telegram_user_id: String(telegramUserId),
+          telegram_username: telegramUsername || '',
+          telegram_chat_id: String(chatId),
+          user_id: targetUserId,
+          tenant_id: targetTenantId,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (dbErr) {
+        console.warn('Supabase binding write error:', dbErr);
+      }
     }
 
     await sendTelegramMessage(
@@ -259,16 +287,21 @@ async function handlePairing(
  * Get active binding for telegram user
  */
 async function getBinding(telegramUserId: string, supabase: any) {
-  try {
-    const { data, error } = await supabase
-      .from('telegram_bindings')
-      .select('*')
-      .eq('telegram_user_id', telegramUserId)
-      .maybeSingle();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('telegram_bindings')
+        .select('*')
+        .eq('telegram_user_id', String(telegramUserId))
+        .not('telegram_user_id', 'like', 'PENDING_%')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (!error && data) return data;
-  } catch (e) {
-    console.warn('Supabase telegram_bindings lookup error:', e);
+      if (!error && data) return data;
+    } catch (e) {
+      console.warn('Supabase telegram_bindings lookup error:', e);
+    }
   }
 
   // Check in-memory bindings

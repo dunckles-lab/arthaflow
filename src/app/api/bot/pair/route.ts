@@ -10,25 +10,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'userId and tenantId are required' }, { status: 400 });
     }
 
-    // 1. Generate Stateless Signed Token (100% reliable, self-verifying)
+    // 1. Generate Stateless Signed Token (self-verifying)
     const signedCode = generateSignedPairingCode(userId, tenantId);
 
-    // 2. Also generate short 6-digit random code
+    // 2. Generate short 6-digit code: AF-XXXXXX
     const randomNum = Math.floor(100000 + Math.random() * 900000);
     const shortCode = `AF-${randomNum}`;
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-    // 3. Attempt to save short code in Supabase if table exists
     const supabase = getSupabase();
-    try {
-      await supabase.from('telegram_pairing_codes').upsert({
-        code: shortCode,
-        user_id: userId,
-        tenant_id: tenantId,
-        expires_at: expiresAt,
-      });
-    } catch (e) {
-      console.warn('Supabase telegram_pairing_codes write skipped (table might not exist yet):', e);
+
+    // 3. Save pending pairing into telegram_bindings (guaranteed table) & telegram_pairing_codes
+    if (supabase) {
+      try {
+        await supabase.from('telegram_bindings').upsert({
+          id: `pair_${randomNum}`,
+          telegram_user_id: `PENDING_${shortCode}`,
+          telegram_chat_id: 'PENDING',
+          user_id: userId,
+          tenant_id: tenantId,
+          updated_at: expiresAt,
+        });
+      } catch (e) {
+        console.warn('telegram_bindings pending pairing write error:', e);
+      }
+
+      try {
+        await supabase.from('telegram_pairing_codes').upsert({
+          code: shortCode,
+          user_id: userId,
+          tenant_id: tenantId,
+          expires_at: expiresAt,
+        });
+      } catch (e) {
+        // Table might not exist yet
+      }
     }
 
     return NextResponse.json({
@@ -55,18 +71,23 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
     let binding: any = null;
 
-    try {
-      const { data, error } = await supabase
-        .from('telegram_bindings')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('telegram_bindings')
+          .select('*')
+          .eq('user_id', userId)
+          .not('telegram_user_id', 'like', 'PENDING_%')
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (!error && data) {
-        binding = data;
+        if (!error && data) {
+          binding = data;
+        }
+      } catch (e) {
+        console.warn('Check pairing DB lookup error:', e);
       }
-    } catch (e) {
-      // Table doesn't exist yet
     }
 
     return NextResponse.json({

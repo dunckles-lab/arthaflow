@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
--- 10. Telegram Bindings Table
+-- 10. Telegram Bindings & Pairing Tables
 CREATE TABLE IF NOT EXISTS public.telegram_bindings (
   id TEXT PRIMARY KEY,
   telegram_user_id TEXT NOT NULL UNIQUE,
@@ -153,6 +153,15 @@ CREATE TABLE IF NOT EXISTS public.telegram_bindings (
   user_id TEXT REFERENCES public.users(id) ON DELETE CASCADE,
   tenant_id TEXT REFERENCES public.tenants(id) ON DELETE CASCADE,
   default_wallet_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW()),
+  updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
+);
+
+CREATE TABLE IF NOT EXISTS public.telegram_pairing_codes (
+  code TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES public.users(id) ON DELETE CASCADE,
+  tenant_id TEXT REFERENCES public.tenants(id) ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
