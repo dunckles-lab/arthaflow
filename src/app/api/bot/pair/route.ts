@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase';
-
-// In-memory fallback if live database table is not yet created
-const memoryPairingCodes = new Map<string, { userId: string; tenantId: string; expiresAt: number }>();
-const memoryBindings = new Map<string, { telegramUserId: string; telegramUsername?: string; userId: string; tenantId: string }>();
+import { generateSignedPairingCode } from '@/lib/pairing-token';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,32 +10,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'userId and tenantId are required' }, { status: 400 });
     }
 
-    // Generate 6-digit random code
+    // 1. Generate Stateless Signed Token (100% reliable, self-verifying)
+    const signedCode = generateSignedPairingCode(userId, tenantId);
+
+    // 2. Also generate short 6-digit random code
     const randomNum = Math.floor(100000 + Math.random() * 900000);
-    const code = `AF-${randomNum}`;
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const shortCode = `AF-${randomNum}`;
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-    // Save to memory cache
-    memoryPairingCodes.set(code, { userId, tenantId, expiresAt });
-
-    // Also attempt to save to Supabase if table exists
+    // 3. Attempt to save short code in Supabase if table exists
     const supabase = getSupabase();
     try {
       await supabase.from('telegram_pairing_codes').upsert({
-        code,
+        code: shortCode,
         user_id: userId,
         tenant_id: tenantId,
-        expires_at: new Date(expiresAt).toISOString(),
+        expires_at: expiresAt,
       });
     } catch (e) {
-      console.warn('Supabase telegram_pairing_codes write skipped (fallback to memory):', e);
+      console.warn('Supabase telegram_pairing_codes write skipped (table might not exist yet):', e);
     }
 
     return NextResponse.json({
       success: true,
-      code,
-      expiresInSeconds: 600,
-      botUsername: process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'arthaflow_bot',
+      code: signedCode,
+      shortCode,
+      expiresInSeconds: 900,
+      botUsername: process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'agen_arthabot',
     });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Internal Server Error' }, { status: 500 });
@@ -68,17 +66,7 @@ export async function GET(req: NextRequest) {
         binding = data;
       }
     } catch (e) {
-      console.warn('Supabase telegram_bindings lookup failed, fallback to memory');
-    }
-
-    // Check memory fallback
-    if (!binding) {
-      for (const b of memoryBindings.values()) {
-        if (b.userId === userId) {
-          binding = b;
-          break;
-        }
-      }
+      // Table doesn't exist yet
     }
 
     return NextResponse.json({

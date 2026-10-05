@@ -7,12 +7,12 @@ import {
   Send,
   Copy,
   Check,
-  Smartphone,
   ExternalLink,
   ShieldCheck,
   Zap,
   HelpCircle,
   RefreshCw,
+  Database,
 } from 'lucide-react';
 
 interface TelegramIntegrationModalProps {
@@ -25,7 +25,8 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
   onClose,
 }) => {
   const { currentUser, currentTenant } = useFinance();
-  const [pairingCode, setPairingCode] = useState<string>('');
+  const [displayCode, setDisplayCode] = useState<string>('');
+  const [deepLinkCode, setDeepLinkCode] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [isPaired, setIsPaired] = useState<boolean>(false);
@@ -33,7 +34,7 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
   const [activeTab, setActiveTab] = useState<'pairing' | 'commands'>('pairing');
 
   const botUsername =
-    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'ArthaFlowBot';
+    process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || 'agen_arthabot';
 
   const checkPairingStatus = async () => {
     try {
@@ -63,7 +64,8 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
       });
       const data = await res.json();
       if (data.code) {
-        setPairingCode(data.code);
+        setDeepLinkCode(data.code);
+        setDisplayCode(data.shortCode || data.code);
       }
     } catch (e) {
       console.error('Failed to generate pairing code:', e);
@@ -82,13 +84,14 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
   if (!isOpen) return null;
 
   const handleCopyCode = () => {
-    if (!pairingCode) return;
-    navigator.clipboard.writeText(`/pair ${pairingCode}`);
+    const textToCopy = displayCode ? `/pair ${displayCode}` : '';
+    if (!textToCopy) return;
+    navigator.clipboard.writeText(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const telegramDeepLink = `https://t.me/${botUsername}?start=${pairingCode}`;
+  const telegramDeepLink = `https://t.me/${botUsername}?start=${deepLinkCode || displayCode}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200">
@@ -113,7 +116,7 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
                 </span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Pencatatan mutasi kilat tanpa perlu login website
+                Pencatatan mutasi kilat tanpa perlu buka website
               </p>
             </div>
           </div>
@@ -147,7 +150,7 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Contoh Perintah
+            Contoh Format Catatan
           </button>
         </div>
 
@@ -168,13 +171,13 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
                   <p className="text-[10px] text-slate-400 font-mono">
                     {isPaired && bindingInfo
                       ? `@${bindingInfo.telegram_username || 'user'} • ID: ${bindingInfo.telegram_user_id}`
-                      : 'Kirim kode OTP untuk sinkronisasi'}
+                      : 'Kirim kode pairing untuk menghubungkan'}
                   </p>
                 </div>
               </div>
               <button
                 onClick={checkPairingStatus}
-                className="p-1.5 rounded-lg bg-[#161926] hover:bg-[#1e2436] text-slate-400 hover:text-slate-200 transition-colors"
+                className="p-1.5 rounded-lg bg-[#161926] hover:bg-[#1e2436] text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                 title="Refresh Status"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -184,12 +187,12 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
             {/* OTP Code Generator */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-[#161926] to-[#0a0b10] border border-[#1e2436] text-center space-y-3">
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Kode Pairing Anda (Berlaku 10 Menit)
+                Kode Pairing Anda
               </span>
 
               <div className="flex items-center justify-center gap-2">
                 <div className="font-mono text-2xl sm:text-3xl font-black text-sky-400 bg-[#0a0b10] px-4 py-2 rounded-xl border border-sky-500/30 tracking-widest shadow-inner">
-                  {loading ? '...' : pairingCode || 'AF-______'}
+                  {loading ? '...' : displayCode || 'AF-______'}
                 </div>
                 <button
                   type="button"
@@ -202,7 +205,7 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
               </div>
 
               <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
-                Salin perintah <code>/pair {pairingCode}</code> lalu kirimkan ke Telegram Bot ArthaFlow, atau klik tombol cepat di bawah ini.
+                Salin <code>/pair {displayCode}</code> lalu kirimkan ke Telegram <b>@{botUsername}</b>, atau klik tombol di bawah untuk aktivasi instan:
               </p>
 
               {/* Direct Open Button */}
@@ -214,7 +217,7 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
                   className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/20 transition-all active:scale-95"
                 >
                   <Send className="w-4 h-4" />
-                  Buka Bot di Telegram Langsung
+                  Buka Bot & Pairing Otomatis
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
                 <button
@@ -229,14 +232,14 @@ export const TelegramIntegrationModal: React.FC<TelegramIntegrationModalProps> =
               </div>
             </div>
 
-            {/* Steps Info */}
+            {/* Scope Info */}
             <div className="space-y-2 text-xs text-slate-300 bg-[#0a0b10] p-3.5 rounded-2xl border border-[#1e2436]">
               <h4 className="font-semibold text-slate-200 flex items-center gap-1.5 mb-1 text-[11px]">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                Keamanan & Batas Akses
+                Target Sinkronisasi
               </h4>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Setiap transaksi yang dicatat via bot otomatis masuk ke scope <b>{currentTenant.name}</b> atas nama akun <b>{currentUser.name}</b> dan tercatat di Log Audit sistem.
+                Semua mutasi yang dicatat via bot otomatis masuk ke ruang buku <b>{currentTenant.name}</b> sebagai <b>{currentUser.name}</b>.
               </p>
             </div>
           </div>
