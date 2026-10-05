@@ -303,19 +303,21 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
           )}
 
           {/* Step 1: Open SQL Editor */}
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center">1</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs">Buka Supabase SQL Editor</span>
+          <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center shrink-0">1</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs truncate">Buka SQL Editor</span>
               </div>
               <a
                 href="https://supabase.com/dashboard/project/fhtpseqhrhjtpzucnnrx/sql/new"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer"
+                title="Buka Supabase SQL Editor"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer shrink-0"
               >
-                Buka SQL Editor
+                <span className="hidden sm:inline">Buka SQL Editor</span>
+                <span className="sm:hidden text-[11px]">Buka</span>
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
@@ -325,50 +327,54 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
           </div>
 
           {/* Step 2: Copy SQL Script */}
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center">2</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs">Salin & Tempel Skrip SQL</span>
+          <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center shrink-0">2</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs truncate">Salin & Tempel Skrip SQL</span>
               </div>
               <button
                 type="button"
                 onClick={handleCopy}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
+                title="Salin Skrip SQL Lengkap"
+                className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer shrink-0 ${
                   copied
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40'
                     : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm'
                 }`}
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? 'Tersalin ke Clipboard!' : 'Salin Skrip SQL Lengkap'}
+                <span className="hidden sm:inline">{copied ? 'Tersalin ke Clipboard!' : 'Salin Skrip SQL'}</span>
+                <span className="sm:hidden text-[11px]">{copied ? 'Tersalin' : 'Salin SQL'}</span>
               </button>
             </div>
             <p className="text-[11px] text-slate-600 dark:text-slate-400">
               Tempel kode SQL di bawah ke dalam editor Supabase, lalu tekan tombol <strong>Run</strong> (atau tombol Play hijau).
             </p>
             <div className="relative">
-              <pre className="p-3 rounded-lg bg-slate-900 text-slate-100 dark:bg-[#0a0b10] dark:text-slate-300 border border-slate-800 dark:border-[#1e2436] text-[10px] font-mono overflow-x-auto max-h-40 select-text">
+              <pre className="p-3 rounded-lg bg-slate-900 text-slate-100 dark:bg-[#0a0b10] dark:text-slate-300 border border-slate-800 dark:border-[#1e2436] text-[10px] font-mono overflow-x-auto max-h-40 select-text leading-relaxed">
                 {SUPABASE_SQL_DDL}
               </pre>
             </div>
           </div>
 
           {/* Step 3: Verify Connection */}
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center">3</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs">Verifikasi & Hubungkan</span>
+          <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center shrink-0">3</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs truncate">Verifikasi & Hubungkan</span>
               </div>
               <button
                 type="button"
                 disabled={isVerifying}
                 onClick={handleVerify}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+                title="Verifikasi status koneksi tabel Supabase"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50 shrink-0"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isVerifying ? 'animate-spin' : ''}`} />
-                {isVerifying ? 'Memeriksa...' : 'Verifikasi Sekarang'}
+                <span className="hidden sm:inline">{isVerifying ? 'Memeriksa...' : 'Verifikasi Sekarang'}</span>
+                <span className="sm:hidden text-[11px]">{isVerifying ? 'Cek...' : 'Verifikasi'}</span>
               </button>
             </div>
             <p className="text-[11px] text-slate-600 dark:text-slate-400">

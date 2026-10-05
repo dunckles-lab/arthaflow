@@ -111,44 +111,45 @@ export const Navbar: React.FC = () => {
             {/* Supabase status badge */}
             <button
               onClick={() => setIsDbModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-[11px] text-slate-300 transition-colors cursor-pointer"
-              title="Konfigurasi Database"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] border border-slate-200 dark:border-[#1e2436] text-[11px] text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              title="Konfigurasi Database Supabase"
             >
               <span
-                className={`w-2 h-2 rounded-full ${
-                  isLiveDbConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  isLiveDbConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
                 }`}
               />
-              <span>{isLiveDbConnected ? 'Live DB' : 'Supabase Setup'}</span>
+              <span className="hidden xl:inline">{isLiveDbConnected ? 'Live DB' : 'Supabase Setup'}</span>
             </button>
 
             {/* Telegram Bot Button */}
             <button
               onClick={() => setIsTelegramModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-xs font-semibold text-sky-400 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-500/10 hover:bg-sky-100 dark:hover:bg-sky-500/20 border border-sky-200 dark:border-sky-500/20 text-xs font-semibold text-sky-700 dark:text-sky-400 transition-colors cursor-pointer"
               title="Integrasi Telegram Bot"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>Bot Tele</span>
+              <span className="hidden lg:inline">Bot Tele</span>
             </button>
 
             {/* Category Management Button */}
             <button
               onClick={() => setIsCatModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] border border-slate-200 dark:border-[#1e2436] text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
               title="Kelola Kategori"
             >
-              <Tag className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Kategori</span>
+              <Tag className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden lg:inline">Kategori</span>
             </button>
 
             {/* Export Reports Button */}
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] border border-slate-200 dark:border-[#1e2436] text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+              title="Ekspor Laporan (Excel & PDF)"
             >
-              <Download className="w-3.5 h-3.5 text-slate-300" />
-              <span>Ekspor</span>
+              <Download className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Ekspor</span>
             </button>
 
             {/* Admin/Superadmin controls */}
@@ -156,20 +157,20 @@ export const Navbar: React.FC = () => {
               <>
                 <button
                   onClick={() => setIsVisModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-indigo-300 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] border border-slate-200 dark:border-[#1e2436] text-xs font-medium text-indigo-700 dark:text-indigo-300 transition-colors cursor-pointer"
                   title="Atur Hak Visibilitas Anggota"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Visibilitas</span>
+                  <span className="hidden lg:inline">Visibilitas</span>
                 </button>
 
                 <button
                   onClick={() => setIsUserModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-slate-300 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] border border-slate-200 dark:border-[#1e2436] text-xs font-medium text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
                   title="Manajemen Pengguna"
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span>Anggota</span>
+                  <span className="hidden lg:inline">Anggota</span>
                 </button>
               </>
             )}
@@ -177,21 +178,21 @@ export const Navbar: React.FC = () => {
             {isSuperadmin && (
               <button
                 onClick={() => setIsAuditModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#12141d] hover:bg-[#1e2436] border border-[#1e2436] text-xs font-medium text-amber-300 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#12141d] dark:hover:bg-[#1e2436] border border-slate-200 dark:border-[#1e2436] text-xs font-medium text-amber-700 dark:text-amber-300 transition-colors cursor-pointer"
                 title="Log Audit Sistem"
               >
                 <History className="w-3.5 h-3.5" />
-                <span>Audit</span>
+                <span className="hidden lg:inline">Audit</span>
               </button>
             )}
 
             {/* Primary Action: Catat Transaksi */}
             <button
               onClick={() => setIsTxModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              Catat Transaksi
+              <span>Catat Transaksi</span>
             </button>
 
             {/* User Account / Logout */}
