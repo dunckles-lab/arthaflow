@@ -91,14 +91,14 @@ const DashboardContent: React.FC = () => {
 
         {/* Database Setup Alert Banner if DB is not live */}
         {!isLiveDbConnected && (
-          <div className="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-200 shadow-lg shadow-amber-500/5 animate-in fade-in duration-200">
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/25 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200 shadow-sm animate-in fade-in duration-200">
             <div className="flex items-start sm:items-center gap-3">
-              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
+              <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0">
                 <AlertTriangle className="w-4 h-4" />
               </div>
               <div>
-                <p className="font-bold text-amber-100 text-xs sm:text-sm">Database Supabase Belum Diinisialisasi</p>
-                <p className="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
+                <p className="font-bold text-amber-950 dark:text-amber-100 text-xs sm:text-sm">Database Supabase Belum Diinisialisasi</p>
+                <p className="text-[11px] text-amber-800 dark:text-amber-300/80 mt-0.5 leading-relaxed">
                   Penyimpanan lokal telah dinonaktifkan. Jalankan 1x migrasi SQL agar transaksi tersimpan di database cloud dan otomatis tersinkronisasi di semua perangkat Anda.
                 </p>
               </div>

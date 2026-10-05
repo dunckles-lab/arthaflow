@@ -11,8 +11,6 @@ import {
   X,
   AlertTriangle,
   CheckCircle2,
-  Terminal,
-  ShieldCheck,
   Server
 } from 'lucide-react';
 
@@ -156,7 +154,7 @@ CREATE TABLE IF NOT EXISTS public.telegram_bindings (
   created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc', NOW())
 );
 
--- 11. Inisialisasi Data Default Superadmin & Rekening
+-- 11. Initial Seed Data
 INSERT INTO public.tenants (id, name, type)
 VALUES ('t-personal', 'Pribadi (Superadmin)', 'personal')
 ON CONFLICT (id) DO NOTHING;
@@ -181,7 +179,7 @@ VALUES
   ('c-5', 't-personal', 'Belanja & Hiburan', 'expense', 'ShoppingBag', '#ec4899')
 ON CONFLICT (id) DO NOTHING;
 
--- 12. Row Level Security (RLS) Enablement & Policies
+-- 12. Enable Row Level Security (RLS) & Policies
 ALTER TABLE public.tenants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;
@@ -209,10 +207,10 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { isLiveDbConnected, syncStatus, refreshData } = useFinance();
+  const { isLiveDbConnected, refreshData } = useFinance();
   const [copied, setCopied] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verifyMessage, setVerifyMessage] = useState<string | null>(null);
+  const [verifyMessage, setVerifyMessage] = useState<'success' | 'error' | null>(null);
 
   if (!isOpen) return null;
 
@@ -242,62 +240,62 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
-        className="w-full sm:max-w-2xl bg-[#12141d] border border-[#1e2436] sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh] animate-in slide-in-from-bottom-6 duration-200"
+        className="w-full sm:max-w-2xl bg-white dark:bg-[#12141d] border border-slate-200 dark:border-[#1e2436] sm:rounded-2xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1e2436]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-[#1e2436] bg-slate-50 dark:bg-[#12141d]">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl ${isLiveDbConnected ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+            <div className={`p-2.5 rounded-xl ${isLiveDbConnected ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20' : 'bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20'}`}>
               <Database className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 Setup Database Supabase
                 {isLiveDbConnected ? (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/20 font-semibold">
                     Tersinkronisasi
                   </span>
                 ) : (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-                    Perlu Inisialisasi Tabel
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-300 dark:border-amber-500/20 font-semibold">
+                    Perlu Inisialisasi
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Penyimpanan lokal dinonaktifkan agar data sinkron lintas semua perangkat & bot
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#1e2436] text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center cursor-pointer transition-colors modal-close-btn"
+            className="w-8 h-8 rounded-full bg-slate-200 dark:bg-[#1e2436] text-slate-700 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-200 flex items-center justify-center cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 overflow-y-auto space-y-4 text-xs">
+        <div className="p-5 overflow-y-auto space-y-4 text-xs bg-white dark:bg-[#12141d]">
           {/* Status Alert Banner */}
           {!isLiveDbConnected ? (
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-3 text-amber-300">
-              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
+            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 flex items-start gap-3 text-amber-900 dark:text-amber-300">
+              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <div>
-                <p className="font-semibold text-amber-200">Tabel Database Belum Terdeteksi di Supabase</p>
-                <p className="text-[11px] text-amber-300/80 mt-0.5 leading-relaxed">
+                <p className="font-semibold text-amber-950 dark:text-amber-200">Tabel Database Belum Dibuat di Supabase</p>
+                <p className="text-[11px] text-amber-900 dark:text-amber-300/80 mt-0.5 leading-relaxed">
                   Agar mutasi transaksi, saldo dompet, dan rekap otomatis bot sinkron lintas HP dan laptop, skema tabel harus dieksekusi 1x di Supabase SQL Editor.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-3 text-emerald-300">
-              <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 flex items-start gap-3 text-emerald-900 dark:text-emerald-300">
+              <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
               <div>
-                <p className="font-semibold text-emerald-200">Database Supabase Aktif & Terhubung</p>
-                <p className="text-[11px] text-emerald-300/80 mt-0.5 leading-relaxed">
+                <p className="font-semibold text-emerald-950 dark:text-emerald-200">Database Supabase Aktif & Terhubung</p>
+                <p className="text-[11px] text-emerald-900 dark:text-emerald-300/80 mt-0.5 leading-relaxed">
                   Semua data tersimpan langsung di PostgreSQL cloud dan akan otomatis sinkron ke seluruh perangkat Anda.
                 </p>
               </div>
@@ -305,90 +303,100 @@ export const SupabaseSetupModal: React.FC<SupabaseSetupModalProps> = ({
           )}
 
           {/* Step 1: Open SQL Editor */}
-          <div className="p-4 rounded-xl bg-[#0a0b10] border border-[#1e2436] space-y-2.5">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-black text-[11px] flex items-center justify-center">1</span>
-                <span className="font-semibold text-slate-200 text-xs">Buka Supabase SQL Editor</span>
+                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center">1</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs">Buka Supabase SQL Editor</span>
               </div>
               <a
                 href="https://supabase.com/dashboard/project/fhtpseqhrhjtpzucnnrx/sql/new"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-all cursor-pointer shadow-sm shadow-emerald-500/20"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer"
               >
                 Buka SQL Editor
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400">
               Masuk ke project Supabase Anda dan buka menu <strong>SQL Editor</strong> &gt; <strong>New Query</strong>.
             </p>
           </div>
 
           {/* Step 2: Copy SQL Script */}
-          <div className="p-4 rounded-xl bg-[#0a0b10] border border-[#1e2436] space-y-2.5">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-black text-[11px] flex items-center justify-center">2</span>
-                <span className="font-semibold text-slate-200 text-xs">Salin & Tempel Skrip SQL</span>
+                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center">2</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs">Salin & Tempel Skrip SQL</span>
               </div>
               <button
                 type="button"
                 onClick={handleCopy}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                   copied
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-600/20'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40'
+                    : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm'
                 }`}
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? 'Tersalin ke Clipboard!' : 'Salin Skrip SQL Lengkap'}
               </button>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400">
               Tempel kode SQL di bawah ke dalam editor Supabase, lalu tekan tombol <strong>Run</strong> (atau tombol Play hijau).
             </p>
             <div className="relative">
-              <pre className="p-3 rounded-lg bg-[#12141d] border border-[#1e2436] text-[10px] font-mono text-slate-300 overflow-x-auto max-h-40 select-text">
+              <pre className="p-3 rounded-lg bg-slate-900 text-slate-100 dark:bg-[#0a0b10] dark:text-slate-300 border border-slate-800 dark:border-[#1e2436] text-[10px] font-mono overflow-x-auto max-h-40 select-text">
                 {SUPABASE_SQL_DDL}
               </pre>
             </div>
           </div>
 
           {/* Step 3: Verify Connection */}
-          <div className="p-4 rounded-xl bg-[#0a0b10] border border-[#1e2436] space-y-2.5">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0a0b10] border border-slate-200 dark:border-[#1e2436] space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-black text-[11px] flex items-center justify-center">3</span>
-                <span className="font-semibold text-slate-200 text-xs">Verifikasi & Hubungkan</span>
+                <span className="w-5 h-5 rounded-full bg-slate-900 dark:bg-emerald-500 text-white dark:text-slate-950 font-bold text-[11px] flex items-center justify-center">3</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-200 text-xs">Verifikasi & Hubungkan</span>
               </div>
               <button
                 type="button"
                 disabled={isVerifying}
                 onClick={handleVerify}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isVerifying ? 'animate-spin' : ''}`} />
                 {isVerifying ? 'Memeriksa...' : 'Verifikasi Sekarang'}
               </button>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400">
               Setelah menjalankan skrip di Supabase, klik tombol di atas untuk memastikan tabel telah aktif dan data tersinkron.
             </p>
+            {verifyMessage === 'error' && (
+              <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+                Tabel belum terdeteksi di Supabase. Pastikan skrip SQL sudah di-Run.
+              </p>
+            )}
+            {verifyMessage === 'success' && (
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                Koneksi berhasil! Database PostgreSQL Supabase aktif dan tersinkronisasi.
+              </p>
+            )}
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 border-t border-[#1e2436] flex items-center justify-between gap-3 bg-[#0a0b10]">
-          <div className="flex items-center gap-2 text-[11px] text-slate-400">
-            <Server className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Host: <strong className="text-slate-200">PostgreSQL (Supabase)</strong></span>
+        <div className="p-4 border-t border-slate-200 dark:border-[#1e2436] flex items-center justify-between gap-3 bg-slate-50 dark:bg-[#0a0b10]">
+          <div className="flex items-center gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+            <Server className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Host: <strong className="text-slate-900 dark:text-slate-200">PostgreSQL (Supabase)</strong></span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-[#1e2436] hover:bg-slate-700 text-slate-200 font-semibold text-xs cursor-pointer transition-all"
+            className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-[#1e2436] hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs cursor-pointer transition-colors"
           >
             Tutup Dialog
           </button>

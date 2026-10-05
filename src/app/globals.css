@@ -19,7 +19,7 @@
   --background: #f8fafc;
   --foreground: #0f172a;
   --card-bg: #ffffff;
-  --card-subtle: #f1f5f9;
+  --card-subtle: #f8fafc;
   --card-border: #e2e8f0;
   --input-bg: #ffffff;
   --input-border: #cbd5e1;
@@ -44,7 +44,7 @@ body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Allow text selection in inputs and content */
@@ -73,7 +73,7 @@ select option {
 }
 
 /* ==========================================================================
-   LIGHT THEME COMPLETE OVERRIDES (Clean, Uniform, High-Contrast)
+   LIGHT THEME COMPLETE OVERRIDES (High-Contrast, Accessible, Human-Crafted)
    ========================================================================== */
 
 [data-theme="light"],
@@ -107,7 +107,7 @@ html.light body,
 [data-theme="light"] [class*="bg-[#1a1e2e]"],
 [data-theme="light"] [class*="bg-[#1e2436]"] {
   background-color: #f1f5f9 !important;
-  color: #1e293b !important;
+  color: #0f172a !important;
 }
 
 /* Hovers & Active States */
@@ -145,6 +145,74 @@ html.light body,
 [data-theme="light"] .text-slate-500,
 [data-theme="light"] .text-slate-600 {
   color: #64748b !important;
+}
+
+/* High Contrast Accent Colors in Light Mode */
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-300 {
+  color: #047857 !important; /* Emerald 700 */
+}
+
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-200 {
+  color: #b45309 !important; /* Amber 700 */
+}
+
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-rose-300 {
+  color: #be123c !important; /* Rose 700 */
+}
+
+[data-theme="light"] .text-cyan-400,
+[data-theme="light"] .text-cyan-300 {
+  color: #0e7490 !important; /* Cyan 700 */
+}
+
+[data-theme="light"] .text-indigo-400,
+[data-theme="light"] .text-indigo-300 {
+  color: #4338ca !important; /* Indigo 700 */
+}
+
+[data-theme="light"] .text-blue-400,
+[data-theme="light"] .text-blue-300 {
+  color: #1d4ed8 !important; /* Blue 700 */
+}
+
+/* Soft Badges & Light Tone Backgrounds */
+[data-theme="light"] [class*="bg-emerald-500/10"],
+[data-theme="light"] [class*="bg-emerald-500/20"] {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+}
+
+[data-theme="light"] [class*="bg-amber-500/10"],
+[data-theme="light"] [class*="bg-amber-500/20"] {
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+}
+
+[data-theme="light"] [class*="bg-rose-500/10"],
+[data-theme="light"] [class*="bg-rose-500/20"] {
+  background-color: #fff1f2 !important;
+  color: #be123c !important;
+  border-color: #fecdd3 !important;
+}
+
+[data-theme="light"] [class*="bg-cyan-500/10"],
+[data-theme="light"] [class*="bg-cyan-500/20"] {
+  background-color: #ecfeff !important;
+  color: #0e7490 !important;
+  border-color: #a5f3fc !important;
+}
+
+[data-theme="light"] [class*="bg-indigo-500/10"],
+[data-theme="light"] [class*="bg-indigo-500/20"] {
+  background-color: #eef2ff !important;
+  color: #4338ca !important;
+  border-color: #c7d2fe !important;
 }
 
 /* Modal Close Buttons & Icon Buttons */
@@ -223,9 +291,9 @@ html.light body,
 /* Code & Pre Blocks in Modals */
 [data-theme="light"] pre,
 [data-theme="light"] code {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-  border-color: #e2e8f0 !important;
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #1e293b !important;
 }
 
 /* Chart Tooltips & Cards in Light Mode */
