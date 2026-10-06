@@ -844,18 +844,72 @@ async function handleCallbackQuery(cb: any) {
   if (data.startsWith('cancel_tx:')) {
     const txId = data.split(':')[1];
     try {
-      await supabase.from('transactions').delete().eq('id', txId);
-      await answerCallbackQuery(callbackQueryId, 'Transaksi berhasil dibatalkan!');
+      // 1. Fetch transaction record before deletion to rollback wallet balances
+      const { data: tx } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('id', txId)
+        .maybeSingle();
+
+      if (tx) {
+        // Rollback source wallet balance
+        if (tx.wallet_id) {
+          const { data: srcWallet } = await supabase
+            .from('wallets')
+            .select('id, balance')
+            .eq('id', tx.wallet_id)
+            .maybeSingle();
+
+          if (srcWallet) {
+            let restoredBalance = Number(srcWallet.balance);
+            if (tx.type === 'expense') {
+              restoredBalance += Number(tx.amount);
+            } else if (tx.type === 'income') {
+              restoredBalance = Math.max(0, restoredBalance - Number(tx.amount));
+            } else if (tx.type === 'transfer') {
+              restoredBalance += Number(tx.amount);
+            }
+
+            await supabase
+              .from('wallets')
+              .update({ balance: restoredBalance })
+              .eq('id', srcWallet.id);
+          }
+        }
+
+        // Rollback target wallet balance if it was a transfer
+        if (tx.type === 'transfer' && tx.target_wallet_id) {
+          const { data: tgtWallet } = await supabase
+            .from('wallets')
+            .select('id, balance')
+            .eq('id', tx.target_wallet_id)
+            .maybeSingle();
+
+          if (tgtWallet) {
+            const restoredTargetBalance = Math.max(0, Number(tgtWallet.balance) - Number(tx.amount));
+            await supabase
+              .from('wallets')
+              .update({ balance: restoredTargetBalance })
+              .eq('id', tgtWallet.id);
+          }
+        }
+
+        // Delete the transaction record
+        await supabase.from('transactions').delete().eq('id', txId);
+      }
+
+      await answerCallbackQuery(callbackQueryId, 'Transaksi berhasil dibatalkan dan saldo dikembalikan!');
 
       if (chatId && messageId) {
         await editTelegramMessage(
           chatId,
           messageId,
           `🚫 <b>[TRANSAKSI DIBATALKAN]</b>\n\n` +
-          `Transaksi telah dibatalkan dan dihapus secara otomatis.`
+          `Transaksi telah dihapus dan saldo rekening telah dikembalikan secara otomatis.`
         );
       }
     } catch (e: any) {
+      console.error('Cancel transaction error:', e);
       await answerCallbackQuery(callbackQueryId, `Transaksi telah dibatalkan.`);
     }
   } else if (data.startsWith('set_scope:')) {
